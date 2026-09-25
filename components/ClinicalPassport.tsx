@@ -189,7 +189,7 @@ export default function ClinicalPassport() {
       </div>
 
       {/* Main Grid: Passport Explorer & Holographic Certificate Viewer */}
-      <div style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: "24px" }}>
+      <div className="passport-grid">
         {/* Left List */}
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {filteredPassports.map((item, idx) => {
@@ -288,7 +288,7 @@ export default function ClinicalPassport() {
 
           {/* Clinical Telemetry & Vital Waveform Row */}
           <div style={{
-            display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px",
+            display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "12px",
             marginBottom: "24px",
           }}>
             <div style={{ background: "rgba(0,0,0,0.25)", padding: "14px", borderRadius: "10px", border: "1px solid var(--border)" }}>

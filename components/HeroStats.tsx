@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 interface HeroStatsProps {
   analysisComplete: boolean;
   isAnalyzing: boolean;
-  onSelectTab?: (tab: "nexus" | "passport" | "bob" | "compliance") => void;
+  onSelectTab?: (tab: "nexus" | "passport" | "bob" | "compliance" | "bobalytics") => void;
 }
 
 const stats = [

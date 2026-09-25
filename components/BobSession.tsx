@@ -240,7 +240,7 @@ export default function BobSession({ isAnalyzing, analysisComplete }: BobSession
   const modeColors = { ask: "var(--accent-blue)", plan: "var(--accent-purple)", agent: "var(--accent-green)" };
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: "24px" }}>
+    <div className="bob-grid">
       {/* Main Terminal Window */}
       <div className="glass-card" style={{ padding: "0", overflow: "hidden", display: "flex", flexDirection: "column", height: "740px" }}>
         {/* Terminal Header */}

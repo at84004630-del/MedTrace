@@ -13,6 +13,14 @@ export default function Header({ isAnalyzing, analysisComplete, onTriggerScan }:
   const [liveStream, setLiveStream] = useState(true);
   const [showNotifications, setShowNotifications] = useState(false);
 
+  const [showHospitalMenu, setShowHospitalMenu] = useState(false);
+
+  const hospitals = [
+    { name: "Metro General Hospital · Central ICU & Inpatient Wards (540 Beds)", badge: "3 Gaps", code: "MGH-ICU" },
+    { name: "Apollo Apex Institute · Cardiovascular ICU & Cath Lab (320 Beds)", badge: "1 Gap", code: "APOLLO-CCU" },
+    { name: "St. Jude Children's · Pediatric Oncology & Intensive Care (210 Beds)", badge: "2 Gaps", code: "STJ-PED" },
+  ];
+
   return (
     <header style={{
       borderBottom: "1px solid var(--border)",
@@ -59,24 +67,77 @@ export default function Header({ isAnalyzing, analysisComplete, onTriggerScan }:
             </div>
           </div>
 
-          {/* Hospital Scope Divider & Pill */}
-          <div style={{ display: "none", alignItems: "center", gap: "10px" }} className="md:flex">
+          {/* Hospital Scope Divider & Dropdown */}
+          <div style={{ display: "none", alignItems: "center", gap: "10px", position: "relative" }} className="md:flex">
             <div style={{ width: "1px", height: "24px", background: "var(--border)" }} />
-            <div style={{
-              display: "flex", alignItems: "center", gap: "8px",
-              background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)",
-              borderRadius: "8px", padding: "5px 12px", fontSize: "12px",
-              color: "var(--text-secondary)",
-            }}>
+            <button
+              onClick={() => setShowHospitalMenu(!showHospitalMenu)}
+              style={{
+                display: "flex", alignItems: "center", gap: "8px",
+                background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)",
+                borderRadius: "8px", padding: "6px 12px", fontSize: "12px",
+                color: "var(--text-secondary)", cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+              className="hover:border-accent-cyan"
+            >
               <span style={{ fontSize: "14px" }}>🏥</span>
-              <span style={{ fontWeight: 500, color: "var(--text-primary)" }}>{hospital}</span>
+              <span style={{ fontWeight: 600, color: "var(--text-primary)", maxWidth: "260px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {hospital.split("·")[0]}
+              </span>
               <span style={{ fontSize: "10px", color: "var(--accent-cyan)" }}>▼</span>
-            </div>
+            </button>
+
+            {showHospitalMenu && (
+              <div
+                className="glass-card animate-slide-up"
+                style={{
+                  position: "absolute", top: "42px", left: "10px",
+                  width: "360px", padding: "10px", zIndex: 100,
+                  background: "rgba(6, 14, 26, 0.96)",
+                  boxShadow: "0 16px 48px rgba(0,0,0,0.85)",
+                  border: "1px solid var(--border-bright)",
+                }}
+              >
+                <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-muted)", padding: "6px 10px", textTransform: "uppercase" }}>
+                  Select Hospital Facility
+                </div>
+                {hospitals.map(h => (
+                  <div
+                    key={h.code}
+                    onClick={() => {
+                      setHospital(h.name);
+                      setShowHospitalMenu(false);
+                      if (onTriggerScan) onTriggerScan();
+                    }}
+                    style={{
+                      padding: "10px 12px", borderRadius: "8px", cursor: "pointer",
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                      background: hospital.startsWith(h.name.split("·")[0]) ? "rgba(56,139,253,0.15)" : "transparent",
+                      transition: "all 0.15s",
+                    }}
+                    className="hover:bg-card-hover"
+                  >
+                    <div>
+                      <div style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-primary)" }}>
+                        {h.name.split("·")[0]}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+                        {h.name.split("·")[1]}
+                      </div>
+                    </div>
+                    <span className="badge badge-critical" style={{ fontSize: "9px" }}>
+                      {h.badge}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Center: Live Analysis Status Banner */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        {/* Center: Live Analysis Status Banner & Manual Scan Trigger */}
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           {isAnalyzing && (
             <div style={{
               display: "flex", alignItems: "center", gap: "10px",
@@ -90,7 +151,7 @@ export default function Header({ isAnalyzing, analysisComplete, onTriggerScan }:
                 background: "var(--accent-cyan)",
                 display: "inline-block",
               }} className="animate-pulse-ring" />
-              <span style={{ fontWeight: 600 }}>IBM Bob AST Engine: Scanning 11 MediCore Modules...</span>
+              <span style={{ fontWeight: 600 }}>IBM Bob AST: Scanning 11 MediCore Modules...</span>
             </div>
           )}
 
@@ -98,7 +159,7 @@ export default function Header({ isAnalyzing, analysisComplete, onTriggerScan }:
             <div style={{
               display: "flex", alignItems: "center", gap: "8px",
               background: "rgba(63,185,80,0.1)", border: "1px solid rgba(63,185,80,0.3)",
-              borderRadius: "9999px", padding: "6px 16px",
+              borderRadius: "9999px", padding: "6px 14px",
               fontSize: "12px", color: "var(--accent-green)",
               boxShadow: "0 0 15px rgba(63,185,80,0.15)",
             }}>
@@ -111,6 +172,25 @@ export default function Header({ isAnalyzing, analysisComplete, onTriggerScan }:
             </div>
           )}
 
+          {/* Trigger Scan Button for Judges */}
+          <button
+            onClick={() => onTriggerScan && onTriggerScan()}
+            disabled={isAnalyzing}
+            style={{
+              background: "linear-gradient(135deg, rgba(56,139,253,0.18) 0%, rgba(88,214,232,0.12) 100%)",
+              border: "1px solid rgba(88,214,232,0.35)",
+              borderRadius: "8px", padding: "5px 12px",
+              fontSize: "11px", fontWeight: 700, color: "var(--accent-cyan)",
+              display: "flex", alignItems: "center", gap: "6px", cursor: isAnalyzing ? "not-allowed" : "pointer",
+              transition: "all 0.2s",
+            }}
+            className="hover:border-accent-cyan"
+            title="Trigger an autonomous IBM Bob AST audit scan across all 11 MediCore modules"
+          >
+            <span>⟳</span>
+            <span>{isAnalyzing ? "Scanning..." : "Rescan 11 Modules"}</span>
+          </button>
+
           {/* Live Telemetry Stream Indicator Toggle */}
           <button
             onClick={() => setLiveStream(!liveStream)}
@@ -119,11 +199,12 @@ export default function Header({ isAnalyzing, analysisComplete, onTriggerScan }:
               border: `1px solid ${liveStream ? "rgba(56,139,253,0.4)" : "var(--border)"}`,
               borderRadius: "8px", padding: "5px 10px",
               fontSize: "11px", fontWeight: 600, color: liveStream ? "var(--accent-cyan)" : "var(--text-muted)",
-              display: "flex", alignItems: "center", gap: "6px", cursor: "pointer",
+              display: "none", alignItems: "center", gap: "6px", cursor: "pointer",
             }}
+            className="sm:flex"
           >
             <span>{liveStream ? "📡" : "⏸️"}</span>
-            <span>{liveStream ? "TELEMETRY LIVE" : "STREAM PAUSED"}</span>
+            <span>{liveStream ? "TELEMETRY LIVE" : "PAUSED"}</span>
           </button>
         </div>
 

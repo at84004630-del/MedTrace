@@ -305,7 +305,7 @@ export default function CompliancePanel() {
       </div>
 
       {/* Main Grid: Compliance Clauses & Evidence Inspector */}
-      <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: "24px" }}>
+      <div className="compliance-grid">
         {/* Left: Clauses Table */}
         <div className="glass-card" style={{ padding: "22px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>

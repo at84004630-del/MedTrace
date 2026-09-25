@@ -8,12 +8,24 @@ import Header from "@/components/Header";
 import HeroStats from "@/components/HeroStats";
 import CompliancePanel from "@/components/CompliancePanel";
 
-export type Tab = "nexus" | "passport" | "bob" | "compliance";
+import Bobalytics from "@/components/Bobalytics";
+
+export type Tab = "nexus" | "passport" | "bob" | "bobalytics" | "compliance";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>("nexus");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
+
+  // Trigger AST analysis
+  const handleTriggerScan = () => {
+    setIsAnalyzing(true);
+    setAnalysisComplete(false);
+    setTimeout(() => {
+      setIsAnalyzing(false);
+      setAnalysisComplete(true);
+    }, 2400);
+  };
 
   // Simulate Bob analysis on first load
   useEffect(() => {
@@ -22,8 +34,8 @@ export default function Home() {
       setTimeout(() => {
         setIsAnalyzing(false);
         setAnalysisComplete(true);
-      }, 3200);
-    }, 800);
+      }, 3000);
+    }, 600);
     return () => clearTimeout(t);
   }, []);
 
@@ -31,7 +43,8 @@ export default function Home() {
     { id: "nexus",      label: "NexusGuard",       icon: "🗺️", badge: "3 Gaps" },
     { id: "passport",   label: "ClinicalPassport",  icon: "📋", badge: "9 Records" },
     { id: "bob",        label: "Bob Session",       icon: "🤖", badge: "Live" },
-    { id: "compliance", label: "Compliance Report", icon: "✅" },
+    { id: "bobalytics", label: "Bobalytics & ROI",  icon: "📊", badge: "+45% Faster" },
+    { id: "compliance", label: "Compliance Report", icon: "🛡️", badge: "Audit Ready" },
   ];
 
   return (
@@ -58,7 +71,11 @@ export default function Home() {
       }} />
 
       <div style={{ position: "relative", zIndex: 1 }}>
-        <Header isAnalyzing={isAnalyzing} analysisComplete={analysisComplete} />
+        <Header
+          isAnalyzing={isAnalyzing}
+          analysisComplete={analysisComplete}
+          onTriggerScan={handleTriggerScan}
+        />
 
         <main style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 24px 60px" }}>
           <HeroStats
@@ -71,6 +88,7 @@ export default function Home() {
           <div style={{
             display: "flex", gap: "8px", marginBottom: "28px",
             borderBottom: "1px solid var(--border)", paddingBottom: "0",
+            overflowX: "auto",
           }}>
             {tabs.map((tab) => (
               <button
@@ -84,7 +102,7 @@ export default function Home() {
                     : "2px solid transparent",
                   color: activeTab === tab.id ? "var(--text-primary)" : "var(--text-secondary)",
                   cursor: "pointer", fontSize: "14px", fontWeight: activeTab === tab.id ? 600 : 400,
-                  transition: "all 0.2s", marginBottom: "-1px",
+                  transition: "all 0.2s", marginBottom: "-1px", whiteSpace: "nowrap",
                 }}
               >
                 <span>{tab.icon}</span>
@@ -93,7 +111,7 @@ export default function Home() {
                   <span style={{
                     background: activeTab === tab.id
                       ? "rgba(56,139,253,0.2)" : "rgba(255,255,255,0.06)",
-                    color: activeTab === tab.id ? "var(--accent-blue)" : "var(--text-muted)",
+                    color: activeTab === tab.id ? "var(--accent-cyan)" : "var(--text-muted)",
                     fontSize: "10px", fontWeight: 700, padding: "2px 7px",
                     borderRadius: "10px", letterSpacing: "0.03em",
                   }}>
@@ -109,6 +127,7 @@ export default function Home() {
             {activeTab === "nexus"      && <NexusGuard analysisComplete={analysisComplete} />}
             {activeTab === "passport"   && <ClinicalPassport />}
             {activeTab === "bob"        && <BobSession isAnalyzing={isAnalyzing} analysisComplete={analysisComplete} />}
+            {activeTab === "bobalytics" && <Bobalytics />}
             {activeTab === "compliance" && <CompliancePanel />}
           </div>
         </main>

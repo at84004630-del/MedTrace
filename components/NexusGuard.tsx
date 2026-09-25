@@ -140,10 +140,14 @@ export default function NexusGuard({ analysisComplete }: { analysisComplete: boo
               <h2 style={{ fontSize: "19px", fontWeight: 800 }}>
                 NexusGuard™: Autonomous Topology &amp; Gap Engine
               </h2>
-              <span className="badge badge-critical">3 Critical Disconnects</span>
+              {approvedFixes.size === 3 ? (
+                <span className="badge badge-ok">✓ All 3 Gaps Resolved</span>
+              ) : (
+                <span className="badge badge-critical">{3 - approvedFixes.size} Disconnects Remaining</span>
+              )}
             </div>
             <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
-              IBM Bob parsed all 11 MediCore AST files to detect missing foreign keys, stale event hooks, and unclosed handoffs.
+              IBM Bob parsed all 11 MediCore AST files to detect missing foreign keys, stale event hooks, and unclosed handoffs. Click any gap or module to inspect and approve patches.
             </p>
           </div>
 
@@ -154,8 +158,8 @@ export default function NexusGuard({ analysisComplete }: { analysisComplete: boo
             </span>
             {[
               { id: "all" as const, label: "All Links (10)" },
-              { id: "gaps" as const, label: "Broken Gaps (3)" },
-              { id: "connected" as const, label: "Connected (5)" },
+              { id: "gaps" as const, label: `Broken Gaps (${Math.max(0, 3 - approvedFixes.size)})` },
+              { id: "connected" as const, label: `Connected (${5 + approvedFixes.size})` },
             ].map(f => (
               <button
                 key={f.id}
@@ -180,9 +184,9 @@ export default function NexusGuard({ analysisComplete }: { analysisComplete: boo
       </div>
 
       {/* Main Grid: Interactive Canvas and Inspector Drawer */}
-      <div style={{ display: "grid", gridTemplateColumns: "1.7fr 1fr", gap: "24px" }}>
+      <div className="nexus-grid">
         {/* Left: SVG Topological Canvas */}
-        <div className="glass-card" style={{ padding: "24px", position: "relative", minHeight: "520px" }}>
+        <div className="glass-card" style={{ padding: "24px", position: "relative", minHeight: "520px", overflowX: "auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
             <div style={{ fontSize: "12px", color: "var(--text-muted)", letterSpacing: "0.05em", textTransform: "uppercase", fontWeight: 700 }}>
               Live Telemetry Graph · Click any module to inspect
@@ -200,7 +204,7 @@ export default function NexusGuard({ analysisComplete }: { analysisComplete: boo
           </div>
 
           {/* SVG Map */}
-          <div style={{ position: "relative", width: "100%", height: "440px", overflow: "hidden" }}>
+          <div style={{ position: "relative", width: "100%", height: "440px", minWidth: "620px" }}>
             <svg style={{ width: "100%", height: "100%" }} viewBox="0 0 760 420">
               <defs>
                 <linearGradient id="flowGradOk" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -223,7 +227,8 @@ export default function NexusGuard({ analysisComplete }: { analysisComplete: boo
                 const dst = MODULES.find(m => m.id === link.to);
                 if (!src || !dst) return null;
 
-                const isGap = link.status === "gap";
+                const isFixed = link.gapId !== undefined && approvedFixes.has(link.gapId);
+                const isGap = link.status === "gap" && !isFixed;
                 const isSelected = selectedNode && (selectedNode.id === src.id || selectedNode.id === dst.id);
 
                 return (
@@ -232,7 +237,7 @@ export default function NexusGuard({ analysisComplete }: { analysisComplete: boo
                     <line
                       x1={src.x + 40} y1={src.y + 25}
                       x2={dst.x + 40} y2={dst.y + 25}
-                      stroke={isGap ? "rgba(248,81,73,0.3)" : "rgba(56,139,253,0.2)"}
+                      stroke={isGap ? "rgba(248,81,73,0.3)" : isFixed ? "rgba(63,185,80,0.35)" : "rgba(56,139,253,0.2)"}
                       strokeWidth={isSelected ? 6 : 4}
                       strokeLinecap="round"
                     />
@@ -241,14 +246,14 @@ export default function NexusGuard({ analysisComplete }: { analysisComplete: boo
                     <line
                       x1={src.x + 40} y1={src.y + 25}
                       x2={dst.x + 40} y2={dst.y + 25}
-                      stroke={isGap ? "#f85149" : "url(#flowGradOk)"}
+                      stroke={isGap ? "#f85149" : isFixed ? "#3fb950" : "url(#flowGradOk)"}
                       strokeWidth={isSelected ? 3 : 2}
                       className={isGap ? "flow-line-reverse" : "flow-line"}
                       strokeLinecap="round"
                     />
 
-                    {/* Gap Warning Pulse Pin */}
-                    {isGap && (
+                    {/* Gap Warning Pulse Pin or Resolved Check Pin */}
+                    {isGap ? (
                       <circle
                         cx={(src.x + dst.x) / 2 + 40}
                         cy={(src.y + dst.y) / 2 + 25}
@@ -257,7 +262,16 @@ export default function NexusGuard({ analysisComplete }: { analysisComplete: boo
                         filter="url(#glowEffect)"
                         className="animate-pulse-ring"
                       />
-                    )}
+                    ) : isFixed ? (
+                      <circle
+                        cx={(src.x + dst.x) / 2 + 40}
+                        cy={(src.y + dst.y) / 2 + 25}
+                        r="5"
+                        fill="#3fb950"
+                        filter="url(#glowEffect)"
+                        className="animate-pulse-green"
+                      />
+                    ) : null}
                   </g>
                 );
               })}
