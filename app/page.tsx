@@ -1,69 +1,114 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
+import NexusGuard from "@/components/NexusGuard";
+import ClinicalPassport from "@/components/ClinicalPassport";
+import BobSession from "@/components/BobSession";
+import Header from "@/components/Header";
+import HeroStats from "@/components/HeroStats";
+import CompliancePanel from "@/components/CompliancePanel";
+
+export type Tab = "nexus" | "passport" | "bob" | "compliance";
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState<Tab>("nexus");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisComplete, setAnalysisComplete] = useState(false);
+
+  // Simulate Bob analysis on first load
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setIsAnalyzing(true);
+      setTimeout(() => {
+        setIsAnalyzing(false);
+        setAnalysisComplete(true);
+      }, 3200);
+    }, 800);
+    return () => clearTimeout(t);
+  }, []);
+
+  const tabs: { id: Tab; label: string; icon: string; badge?: string }[] = [
+    { id: "nexus",      label: "NexusGuard",       icon: "🗺️", badge: "3 Gaps" },
+    { id: "passport",   label: "ClinicalPassport",  icon: "📋", badge: "9 Records" },
+    { id: "bob",        label: "Bob Session",       icon: "🤖", badge: "Live" },
+    { id: "compliance", label: "Compliance Report", icon: "✅" },
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div style={{ minHeight: "100vh", background: "var(--bg-primary)" }}>
+      {/* Background grid */}
+      <div style={{
+        position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none",
+        backgroundImage: `
+          linear-gradient(rgba(56,139,253,0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(56,139,253,0.03) 1px, transparent 1px)
+        `,
+        backgroundSize: "48px 48px",
+      }} />
+      {/* Radial glows */}
+      <div style={{
+        position: "fixed", top: "-20%", left: "60%", width: "600px", height: "600px",
+        background: "radial-gradient(circle, rgba(56,139,253,0.07) 0%, transparent 70%)",
+        pointerEvents: "none", zIndex: 0,
+      }} />
+      <div style={{
+        position: "fixed", bottom: "-10%", left: "10%", width: "400px", height: "400px",
+        background: "radial-gradient(circle, rgba(188,140,255,0.06) 0%, transparent 70%)",
+        pointerEvents: "none", zIndex: 0,
+      }} />
+
+      <div style={{ position: "relative", zIndex: 1 }}>
+        <Header isAnalyzing={isAnalyzing} analysisComplete={analysisComplete} />
+
+        <main style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 24px 60px" }}>
+          <HeroStats analysisComplete={analysisComplete} isAnalyzing={isAnalyzing} />
+
+          {/* Tab navigation */}
+          <div style={{
+            display: "flex", gap: "8px", marginBottom: "28px",
+            borderBottom: "1px solid var(--border)", paddingBottom: "0",
+          }}>
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  display: "flex", alignItems: "center", gap: "8px",
+                  padding: "12px 20px", background: "transparent", border: "none",
+                  borderBottom: activeTab === tab.id
+                    ? "2px solid var(--accent-blue)"
+                    : "2px solid transparent",
+                  color: activeTab === tab.id ? "var(--text-primary)" : "var(--text-secondary)",
+                  cursor: "pointer", fontSize: "14px", fontWeight: activeTab === tab.id ? 600 : 400,
+                  transition: "all 0.2s", marginBottom: "-1px",
+                }}
+              >
+                <span>{tab.icon}</span>
+                <span>{tab.label}</span>
+                {tab.badge && (
+                  <span style={{
+                    background: activeTab === tab.id
+                      ? "rgba(56,139,253,0.2)" : "rgba(255,255,255,0.06)",
+                    color: activeTab === tab.id ? "var(--accent-blue)" : "var(--text-muted)",
+                    fontSize: "10px", fontWeight: 700, padding: "2px 7px",
+                    borderRadius: "10px", letterSpacing: "0.03em",
+                  }}>
+                    {tab.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab content */}
+          <div className="animate-fade-in" key={activeTab}>
+            {activeTab === "nexus"      && <NexusGuard analysisComplete={analysisComplete} />}
+            {activeTab === "passport"   && <ClinicalPassport />}
+            {activeTab === "bob"        && <BobSession isAnalyzing={isAnalyzing} analysisComplete={analysisComplete} />}
+            {activeTab === "compliance" && <CompliancePanel />}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
