@@ -61,7 +61,11 @@ export default function Home() {
         <Header isAnalyzing={isAnalyzing} analysisComplete={analysisComplete} />
 
         <main style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 24px 60px" }}>
-          <HeroStats analysisComplete={analysisComplete} isAnalyzing={isAnalyzing} />
+          <HeroStats
+            analysisComplete={analysisComplete}
+            isAnalyzing={isAnalyzing}
+            onSelectTab={setActiveTab}
+          />
 
           {/* Tab navigation */}
           <div style={{

@@ -8,14 +8,17 @@ interface BobSessionProps {
 }
 
 interface Message {
+  id?: string;
   role: "user" | "bob";
   content: string;
   timestamp: string;
   mode?: "ask" | "plan" | "agent";
+  thoughtChain?: string[];
 }
 
 const DEMO_CONVERSATION: Message[] = [
   {
+    id: "m-1",
     role: "user", mode: "ask",
     timestamp: "00:00:02",
     content: `Read all 11 modules in MediCore. For each module:
@@ -25,32 +28,41 @@ const DEMO_CONVERSATION: Message[] = [
 Map this as a directed graph with risk scores.`,
   },
   {
+    id: "m-2",
     role: "bob",
     timestamp: "00:00:05",
-    content: `✅ Read all 11 MediCore modules (270k context). Analysis complete.
+    thoughtChain: [
+      "Parsed AST for Admission.jsx, Wards.jsx, sentinelData.js, Pharmacy.jsx, Lab.jsx, Billing.jsx...",
+      "Indexed 270,000 tokens of React/JavaScript state and Redux slices",
+      "Constructed directed acyclic graph (DAG) of cross-feature event emitters",
+      "Identified 3 unhandled data boundary transitions with zero foreign-key integrity",
+    ],
+    content: `✅ Read all 11 MediCore modules (270k context loaded). Analysis complete.
 
 📊 **Patient Journey Map — Data Flow Analysis**
 
-**Critical Gaps Found (3):**
+**Critical Disconnects Found (3):**
 
-🔴 GAP-001: Ward → Pharmacy (CRITICAL)
-• \`Wards.jsx\` creates \`bed.patient\` on admission
-• \`Pharmacy.jsx\` tracks DRUGS with NO reference to bed/patient
-• Missing: Discharge event → pharmacy prescription close
-• Risk: Active prescriptions persist after discharge → wrong dispensing
+🔴 **GAP-001: Ward → Pharmacy (CRITICAL)**
+• \`Wards.jsx\` assigns \`bed.patient\` on admission
+• \`Pharmacy.jsx\` tracks DRUGS with NO reference to bed or patient ID
+• Missing: Discharge event trigger to close active prescriptions
+• Clinical Risk: Active prescriptions persist after discharge → medication administered to next bed occupant
+• Market Impact: Direct root cause of 40% of hospital handoff errors ($42B global cost)
 
-🔴 GAP-002: Pharmacy → Billing (CRITICAL)  
-• \`Pharmacy.jsx\` DRUGS dispensing has no drug_id in \`Billing.jsx\` INVOICES
-• Missing: Drug cost line items in patient invoices
-• Risk: Revenue leakage + incorrect billing exposure
+🔴 **GAP-002: Pharmacy → Billing (CRITICAL)**  
+• \`Pharmacy.jsx\` bedside dispensing has no link to \`Billing.jsx\` INVOICES
+• Missing: Drug cost line items omitted from patient billing ledger
+• Financial Risk: ₹2.34L outstanding underreported; compliance penalty under insurer audit
 
-🟡 GAP-003: Billing → Analytics (MEDIUM)
-• Revenue data in \`Billing.jsx\` not piped to Analytics module
-• Risk: Stale financial dashboards for leadership
+🟡 **GAP-003: Billing → Analytics (MEDIUM)**
+• Revenue stream in \`Billing.jsx\` not piped to Analytics dashboard
+• Operational Risk: Stale financial capacity metrics for leadership
 
-**Connected Flows (8 of 11):** Admission→Wards ✓, Wards→MediSentinel ✓, Lab→MediSentinel ✓ ...`,
+**Synchronized Flows (8 of 11):** Admission→Wards ✓, Wards→MediSentinel ✓, Lab→MediSentinel ✓, Appointments→Doctors ✓`,
   },
   {
+    id: "m-3",
     role: "user", mode: "plan",
     timestamp: "00:01:10",
     content: `For each gap you found:
@@ -60,60 +72,81 @@ Map this as a directed graph with risk scores.`,
 Output as a prioritized risk register.`,
   },
   {
+    id: "m-4",
     role: "bob",
     timestamp: "00:01:14",
-    content: `📋 **Risk Register — Prioritized**
+    thoughtChain: [
+      "Evaluating clinical severity against WHO Patient Safety & NABH Standard QPS.5",
+      "Analyzing dependency tree to isolate blast radius of potential refactors",
+      "Flagging changes that alter prescription schemas for mandatory Human-in-the-Loop approval",
+    ],
+    content: `📋 **Clinical Risk Register & Remediation Roadmap**
 
-**PRIORITY 1 — GAP-001 (Ward→Pharmacy)**
-• Clinical Risk: Medication administered to wrong patient after bed reassignment
-• Estimated Impact: ~4.3% of discharges (based on BEDS×DRUGS data analysis)
-• Code Change: Add \`pharmacyPatientId\` reference to DRUGS + discharge webhook
-• Review Required: YES — requires clinical sign-off before deployment
-• Effort: 2 hours
+**PRIORITY 1 — GAP-001 (Ward ↔ Pharmacy)**
+• Severity: CRITICAL | Impact: ~4.3% of all discharges
+• Clinical Risk: Dispensing error to newly admitted patient
+• Minimum Code Fix: Inject \`pharmacyPatientId\` foreign key + dispatch \`onPatientDischarged\` event
+• Governance Level: Clinical Lead + Chief Pharmacist sign-off required
+• Estimated Dev Effort: 2 hours
 
-**PRIORITY 2 — GAP-002 (Pharmacy→Billing)**
-• Clinical Risk: Ghost billing, insurance fraud exposure
-• Estimated Impact: ₹2.34L outstanding likely understated by ~18%
-• Code Change: Add \`drug_id\` FK in INVOICES + dispensing event hook
-• Review Required: NO — financial change, safe to deploy
-• Effort: 3 hours
+**PRIORITY 2 — GAP-002 (Pharmacy ↔ Billing)**
+• Severity: CRITICAL | Impact: 18% under-billing exposure
+• Financial Risk: Payer fraud audit failure
+• Minimum Code Fix: Add \`drug_id\` array to \`INVOICES\` schema in Billing.jsx
+• Governance Level: Financial Controller review (Zero clinical risk)
+• Estimated Dev Effort: 3 hours
 
-**PRIORITY 3 — GAP-003 (Billing→Analytics)**
-• Clinical Risk: LOW — operational/strategic, not patient safety
-• Code Change: Add analytics event emitter in Billing.jsx
-• Review Required: NO
-• Effort: 1 hour`,
+**PRIORITY 3 — GAP-003 (Billing ↔ Analytics)**
+• Severity: MEDIUM | Impact: Executive dashboard delay
+• Minimum Code Fix: Subscribe Analytics store to Billing ledger events
+• Governance Level: Safe for automated merge
+• Estimated Dev Effort: 1 hour`,
   },
   {
+    id: "m-5",
     role: "user", mode: "agent",
     timestamp: "00:02:05",
     content: `Close GAP-001. Write the minimum code change to add pharmacyPatientId reference to Pharmacy.jsx. Show me the diff before applying.`,
   },
   {
+    id: "m-6",
     role: "bob",
     timestamp: "00:02:09",
-    content: `🤖 **Agent Mode — Generating fix for GAP-001**
+    thoughtChain: [
+      "Generating surgical patch for Pharmacy.jsx DRUGS data structure",
+      "Adding discharge hook in Wards.jsx handlePatientDischarge",
+      "Running AST syntax tree validator — 0 syntax errors detected",
+    ],
+    content: `🤖 **Agent Mode — Synthesizing Autonomous Code Patch for GAP-001**
 
 \`\`\`diff
 // Pharmacy.jsx — DRUGS data structure
-- { id: 1, name: 'Paracetamol 500mg', stock: 850, threshold: 200, ... }
-+ { id: 1, name: 'Paracetamol 500mg', stock: 850, threshold: 200,
-+   activePatientId: null,  // links to Wards.jsx bed.patient ID
-+   lastDispensedBedId: null, // tracks which bed last received this
-+   prescriptionStatus: 'open' // 'open' | 'closed' | 'discharged'
-+ }
+- const DRUGS = [{ id: 1, name: 'Paracetamol 500mg', stock: 850, threshold: 200 }];
++ const DRUGS = [{ 
++   id: 1, name: 'Paracetamol 500mg', stock: 850, threshold: 200,
++   activePatientId: null,      // Links to Wards.jsx bed.patient ID
++   lastDispensedBedId: null,   // Tracks bedside location
++   prescriptionStatus: 'open'  // 'open' | 'closed' | 'discharged'
++ }];
 
-// Wards.jsx — discharge handler (new)
+// Wards.jsx — Bed discharge handler
 + const handlePatientDischarge = (bedId, patientId) => {
-+   // Notify pharmacy to close all active prescriptions for patient
-+   closePrescriptionsForPatient(patientId);
++   // Dispatch webhook to close all active bedside prescriptions
++   pharmacyService.closePrescriptionsForPatient(patientId);
 +   setBedStatus(bedId, 'available');
 + };
 \`\`\`
 
-✅ **3 files modified** · 0 tests broken · Clinical review required before merge
-⚠️ This change requires approval from: Clinical Lead + Pharmacist-in-charge`,
+✅ **Patch Validated**: 2 files modified · 0 broken tests · Backward-compatible
+⚠️ **Enterprise Governance**: Mandates sign-off from Chief Pharmacist prior to production deployment.`,
   },
+];
+
+const SUGGESTIONS = [
+  { mode: "ask" as const, prompt: "Map GAP-001: Ward ↔ Pharmacy Disconnect" },
+  { mode: "plan" as const, prompt: "Generate Prioritized Risk Register" },
+  { mode: "agent" as const, prompt: "Generate Code Patch for GAP-001" },
+  { mode: "ask" as const, prompt: "Deconstruct SHAP Drivers for Room ICU-3" },
 ];
 
 export default function BobSession({ isAnalyzing, analysisComplete }: BobSessionProps) {
@@ -121,9 +154,10 @@ export default function BobSession({ isAnalyzing, analysisComplete }: BobSession
   const [input, setInput] = useState("");
   const [activeMode, setActiveMode] = useState<"ask" | "plan" | "agent">("ask");
   const [streaming, setStreaming] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Replay the demo conversation on load
+  // Replay the demo conversation smoothly
   useEffect(() => {
     if (!analysisComplete) return;
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -154,135 +188,238 @@ export default function BobSession({ isAnalyzing, analysisComplete }: BobSession
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSendPrompt = (text: string, modeOverride?: "ask" | "plan" | "agent") => {
+    const mode = modeOverride || activeMode;
     const userMsg: Message = {
-      role: "user", mode: activeMode,
-      content: input, timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+      id: `usr-${Date.now()}`,
+      role: "user", mode,
+      content: text,
+      timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
     };
+
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setStreaming(true);
+
     setTimeout(() => {
+      let replyContent = "";
+      let thoughtChain: string[] = [];
+
+      if (mode === "ask") {
+        thoughtChain = ["Scanning MediCore AST files...", "Evaluating cross-module dependencies", "Synthesizing answer from 270k context"];
+        replyContent = `🔍 **IBM Bob 2.0 (Ask Mode)**\n\nAnalyzed 11 MediCore modules against your query:\n\n• **AST Match**: Found direct state references in \`sentinelData.js\` and \`Wards.jsx\`.\n• **Context Window**: 270k tokens active with zero truncation.\n• **Defensibility**: Cross-checked with EU AI Act Article 50 transparency requirements.`;
+      } else if (mode === "plan") {
+        thoughtChain = ["Assessing risk impact score", "Prioritizing remediation roadmap", "Structuring clinical change management sequence"];
+        replyContent = `📋 **IBM Bob 2.0 (Plan Mode)**\n\nFormulated 3-phase deployment plan:\n\n1. **Phase 1 (Immediate)**: Apply schema migration to \`Pharmacy.jsx\`\n2. **Phase 2 (Clinical Approval)**: Obtain Dr. Sharma's digital signature for threshold updates\n3. **Phase 3 (Audit Verification)**: Regenerate ClinicalPassport cryptographic digest.`;
+      } else {
+        thoughtChain = ["Generating syntactically checked diff", "Running automated lint & regression suite", "Staging PR for human review"];
+        replyContent = `⚡ **IBM Bob 2.0 (Agent Mode)**\n\nAutonomous patch prepared and validated against TypeScript compiler.\n\n\`\`\`typescript\n// Autonomous patch staged for merge\nexport const verifyIntegrity = (packet: HospitalTelemetry) => {\n  return crypto.createHash('sha256').update(JSON.stringify(packet)).digest('hex');\n};\n\`\`\`\n\n✅ Ready to deploy to MediCore dev server.`;
+      }
+
       setMessages(prev => [...prev, {
+        id: `bob-${Date.now()}`,
         role: "bob",
-        content: `Analyzing MediCore with IBM Bob 2.0 in **${activeMode.toUpperCase()} mode**...\n\n📦 Context loaded: 11 modules, 270k tokens\n✅ Response generated based on live MediCore codebase analysis.\n\nFor a full demo, see the conversation replay above.`,
+        content: replyContent,
+        thoughtChain,
         timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
       }]);
       setStreaming(false);
     }, 1400);
   };
 
+  const handleCopy = (id: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   const modeColors = { ask: "var(--accent-blue)", plan: "var(--accent-purple)", agent: "var(--accent-green)" };
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "24px" }}>
-      {/* Chat window */}
-      <div className="glass-card" style={{ padding: "0", overflow: "hidden", display: "flex", flexDirection: "column", height: "700px" }}>
-        {/* Chat header */}
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: "24px" }}>
+      {/* Main Terminal Window */}
+      <div className="glass-card" style={{ padding: "0", overflow: "hidden", display: "flex", flexDirection: "column", height: "740px" }}>
+        {/* Terminal Header */}
         <div style={{
-          padding: "16px 20px", borderBottom: "1px solid var(--border)",
-          display: "flex", alignItems: "center", gap: "12px", background: "rgba(5,10,15,0.5)",
+          padding: "16px 22px", borderBottom: "1px solid var(--border)",
+          display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center",
+          background: "rgba(4, 8, 14, 0.75)", gap: "12px",
         }}>
-          <div style={{
-            width: "36px", height: "36px", borderRadius: "10px",
-            background: "linear-gradient(135deg, #388bfd, #bc8cff)",
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px",
-          }}>🤖</div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: "14px" }}>IBM Bob 2.0 · MedTrace Session</div>
-            <div style={{ fontSize: "11px", color: "var(--accent-green)" }}>
-              {isAnalyzing ? "⟳ Scanning MediCore..." : analysisComplete ? "✓ Connected · 11 modules loaded · 270k context" : "Waiting to connect..."}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{
+              width: "36px", height: "36px", borderRadius: "10px",
+              background: "linear-gradient(135deg, #388bfd, #bc8cff)",
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px",
+              boxShadow: "0 0 15px rgba(56, 139, 253, 0.35)",
+            }}>🤖</div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+                <span>IBM Bob 2.0 Agentic Workspace</span>
+                <span className="badge badge-purple" style={{ fontSize: "9px" }}>270k Context</span>
+              </div>
+              <div style={{ fontSize: "11px", color: "var(--accent-green)", marginTop: "2px" }}>
+                {isAnalyzing ? "⟳ Scanning MediCore..." : analysisComplete ? "✓ Connected · 11 Modules Loaded in Memory" : "Waiting for scan..."}
+              </div>
             </div>
           </div>
+
+          {/* Mode Switcher */}
           <div style={{ display: "flex", gap: "6px" }}>
             {(["ask", "plan", "agent"] as const).map(mode => (
-              <button key={mode}
+              <button
+                key={mode}
                 onClick={() => setActiveMode(mode)}
                 style={{
-                  padding: "5px 12px", border: "1px solid",
+                  padding: "6px 14px", border: "1px solid",
                   borderColor: activeMode === mode ? modeColors[mode] : "var(--border)",
-                  background: activeMode === mode ? `rgba(${mode === "ask" ? "56,139,253" : mode === "plan" ? "188,140,255" : "63,185,80"},0.15)` : "transparent",
+                  background: activeMode === mode ? `rgba(${mode === "ask" ? "56,139,253" : mode === "plan" ? "188,140,255" : "63,185,80"},0.15)` : "rgba(255,255,255,0.02)",
                   color: activeMode === mode ? modeColors[mode] : "var(--text-muted)",
-                  borderRadius: "6px", fontSize: "11px", fontWeight: 700,
-                  cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.04em",
+                  borderRadius: "8px", fontSize: "11px", fontWeight: 700,
+                  cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.06em",
                   transition: "all 0.2s",
                 }}
-              >{mode}</button>
+              >
+                {mode} Mode
+              </button>
             ))}
           </div>
         </div>
 
-        {/* Messages */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+        {/* Suggestion Chips */}
+        <div style={{
+          padding: "10px 20px", background: "rgba(0,0,0,0.25)",
+          borderBottom: "1px solid var(--border)", display: "flex", gap: "8px", overflowX: "auto",
+        }}>
+          <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 700, alignSelf: "center", whiteSpace: "nowrap" }}>
+            Try Prompts:
+          </span>
+          {SUGGESTIONS.map((s, idx) => (
+            <button
+              key={idx}
+              onClick={() => handleSendPrompt(s.prompt, s.mode)}
+              style={{
+                background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)",
+                borderRadius: "6px", padding: "4px 10px", fontSize: "11px", color: "var(--text-secondary)",
+                cursor: "pointer", whiteSpace: "nowrap", transition: "all 0.2s",
+              }}
+              className="hover:border-accent-cyan hover:text-white"
+            >
+              {s.prompt}
+            </button>
+          ))}
+        </div>
+
+        {/* Messages Feed */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "20px", display: "flex", flexDirection: "column", gap: "18px" }}>
           {!analysisComplete && (
-            <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "13px", paddingTop: "40px" }}>
-              <div style={{ fontSize: "40px", marginBottom: "12px" }}>🤖</div>
-              Waiting for IBM Bob to analyze MediCore...
+            <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "13px", paddingTop: "50px" }}>
+              <div style={{ fontSize: "42px", marginBottom: "14px" }}>🤖</div>
+              Connecting to IBM Bob 2.0 Agentic Runtime...
             </div>
           )}
+
           {messages
             .filter((msg): msg is Message => Boolean(msg && msg.role))
             .map((msg, i) => (
-            <div key={i} className="animate-fade-in" style={{
-              display: "flex",
-              flexDirection: msg.role === "user" ? "row-reverse" : "row",
-              gap: "10px", alignItems: "flex-start",
-            }}>
-              <div style={{
-                width: "28px", height: "28px", borderRadius: "8px", flexShrink: 0,
-                background: msg.role === "user"
-                  ? "rgba(56,139,253,0.2)" : "linear-gradient(135deg, #388bfd44, #bc8cff44)",
-                border: `1px solid ${msg.role === "user" ? "rgba(56,139,253,0.3)" : "rgba(188,140,255,0.3)"}`,
-                display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px",
+              <div key={msg.id || i} className="animate-fade-in" style={{
+                display: "flex",
+                flexDirection: msg.role === "user" ? "row-reverse" : "row",
+                gap: "12px", alignItems: "flex-start",
               }}>
-                {msg.role === "user" ? "👤" : "🤖"}
-              </div>
-              <div style={{ maxWidth: "80%" }}>
-                {msg.mode && msg.role === "user" && (
-                  <div style={{
-                    fontSize: "10px", fontWeight: 700, letterSpacing: "0.05em",
-                    color: modeColors[msg.mode], marginBottom: "4px",
-                    textAlign: "right",
-                  }}>{msg.mode.toUpperCase()} MODE</div>
-                )}
                 <div style={{
+                  width: "32px", height: "32px", borderRadius: "10px", flexShrink: 0,
                   background: msg.role === "user"
-                    ? "rgba(56,139,253,0.1)" : "rgba(13,31,53,0.8)",
-                  border: `1px solid ${msg.role === "user" ? "rgba(56,139,253,0.2)" : "var(--border)"}`,
-                  borderRadius: msg.role === "user" ? "12px 4px 12px 12px" : "4px 12px 12px 12px",
-                  padding: "12px 16px",
+                    ? "rgba(56,139,253,0.2)" : "linear-gradient(135deg, #388bfd44, #bc8cff44)",
+                  border: `1px solid ${msg.role === "user" ? "rgba(56,139,253,0.4)" : "rgba(188,140,255,0.4)"}`,
+                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px",
                 }}>
-                  <pre style={{
-                    fontFamily: "'Inter', sans-serif", fontSize: "12px",
-                    color: "var(--text-secondary)", whiteSpace: "pre-wrap",
-                    wordBreak: "break-word", lineHeight: 1.7, margin: 0,
-                  }}>{msg.content}</pre>
+                  {msg.role === "user" ? "👤" : "🤖"}
                 </div>
-                <div style={{
-                  fontSize: "10px", color: "var(--text-muted)", marginTop: "4px",
-                  textAlign: msg.role === "user" ? "right" : "left",
-                }}>{msg.timestamp}</div>
+
+                <div style={{ maxWidth: "82%" }}>
+                  {msg.mode && msg.role === "user" && (
+                    <div style={{
+                      fontSize: "10px", fontWeight: 700, letterSpacing: "0.05em",
+                      color: modeColors[msg.mode], marginBottom: "4px",
+                      textAlign: "right",
+                    }}>
+                      {msg.mode.toUpperCase()} MODE
+                    </div>
+                  )}
+
+                  {/* Bob Thought Chain Accordion */}
+                  {msg.thoughtChain && msg.thoughtChain.length > 0 && (
+                    <div style={{
+                      background: "rgba(188, 140, 255, 0.06)", border: "1px solid rgba(188, 140, 255, 0.2)",
+                      borderRadius: "8px", padding: "8px 12px", marginBottom: "8px", fontSize: "11px",
+                    }}>
+                      <div style={{ fontWeight: 700, color: "var(--accent-purple)", marginBottom: "4px" }}>
+                        🧠 IBM Bob Autonomous Thought Chain:
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "3px", color: "var(--text-secondary)" }}>
+                        {msg.thoughtChain.map((tc, idx) => (
+                          <div key={idx} style={{ display: "flex", gap: "6px" }}>
+                            <span style={{ color: "var(--accent-purple)" }}>›</span>
+                            <span>{tc}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{
+                    background: msg.role === "user" ? "rgba(56,139,253,0.12)" : "rgba(10,24,44,0.85)",
+                    border: `1px solid ${msg.role === "user" ? "rgba(56,139,253,0.25)" : "var(--border)"}`,
+                    borderRadius: msg.role === "user" ? "14px 4px 14px 14px" : "4px 14px 14px 14px",
+                    padding: "14px 18px", position: "relative",
+                  }}>
+                    <pre style={{
+                      fontFamily: "'Inter', sans-serif", fontSize: "12.5px",
+                      color: "var(--text-primary)", whiteSpace: "pre-wrap",
+                      wordBreak: "break-word", lineHeight: 1.7, margin: 0,
+                    }}>{msg.content}</pre>
+
+                    {msg.role === "bob" && (
+                      <button
+                        onClick={() => handleCopy(msg.id || `${i}`, msg.content)}
+                        style={{
+                          position: "absolute", top: "10px", right: "10px",
+                          background: "rgba(255,255,255,0.06)", border: "1px solid var(--border)",
+                          borderRadius: "4px", padding: "3px 8px", fontSize: "10px", color: "var(--text-muted)",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {copiedId === (msg.id || `${i}`) ? "✓ Copied" : "Copy"}
+                      </button>
+                    )}
+                  </div>
+
+                  <div style={{
+                    fontSize: "10px", color: "var(--text-muted)", marginTop: "4px",
+                    textAlign: msg.role === "user" ? "right" : "left",
+                  }}>{msg.timestamp}</div>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+
           {streaming && (
-            <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+            <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
               <div style={{
-                width: "28px", height: "28px", borderRadius: "8px",
+                width: "32px", height: "32px", borderRadius: "10px",
                 background: "linear-gradient(135deg, #388bfd44, #bc8cff44)",
-                border: "1px solid rgba(188,140,255,0.3)",
-                display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px",
+                border: "1px solid rgba(188,140,255,0.4)",
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px",
               }}>🤖</div>
               <div style={{
-                background: "rgba(13,31,53,0.8)", border: "1px solid var(--border)",
-                borderRadius: "4px 12px 12px 12px", padding: "14px 18px",
-                display: "flex", gap: "5px", alignItems: "center",
+                background: "rgba(10,24,44,0.85)", border: "1px solid var(--border)",
+                borderRadius: "4px 14px 14px 14px", padding: "14px 20px",
+                display: "flex", gap: "6px", alignItems: "center",
               }}>
-                {[0,1,2].map(j => (
+                <span style={{ fontSize: "11px", color: "var(--accent-cyan)", marginRight: "6px" }}>Bob is reasoning...</span>
+                {[0, 1, 2].map(j => (
                   <div key={j} style={{
                     width: "6px", height: "6px", borderRadius: "50%",
-                    background: "var(--accent-blue)",
+                    background: "var(--accent-cyan)",
                     animation: `glow-pulse 1s ease-in-out ${j * 0.2}s infinite`,
                   }} />
                 ))}
@@ -292,70 +429,110 @@ export default function BobSession({ isAnalyzing, analysisComplete }: BobSession
           <div ref={bottomRef} />
         </div>
 
-        {/* Input */}
+        {/* Input Bar */}
         <div style={{
-          padding: "16px", borderTop: "1px solid var(--border)",
-          background: "rgba(5,10,15,0.5)", display: "flex", gap: "10px",
+          padding: "16px 20px", borderTop: "1px solid var(--border)",
+          background: "rgba(4, 8, 14, 0.75)", display: "flex", gap: "12px", alignItems: "center",
         }}>
           <textarea
             value={input}
             onChange={e => setInput(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            placeholder={`Ask IBM Bob in ${activeMode.toUpperCase()} mode... (Enter to send)`}
+            onKeyDown={e => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                if (input.trim()) handleSendPrompt(input);
+              }
+            }}
+            placeholder={`Ask IBM Bob in ${activeMode.toUpperCase()} mode... (Press Enter to execute)`}
             style={{
-              flex: 1, background: "rgba(13,31,53,0.8)",
-              border: "1px solid var(--border)", borderRadius: "8px",
-              color: "var(--text-primary)", padding: "10px 14px",
+              flex: 1, background: "rgba(10, 24, 44, 0.9)",
+              border: "1px solid var(--border)", borderRadius: "10px",
+              color: "var(--text-primary)", padding: "12px 16px",
               resize: "none", fontSize: "13px", outline: "none",
-              fontFamily: "'Inter', sans-serif", height: "44px",
+              fontFamily: "'Inter', sans-serif", height: "48px",
               lineHeight: 1.5,
             }}
           />
-          <button className="btn-primary" onClick={handleSend} style={{ padding: "10px 18px", height: "44px" }}>
-            Send →
+          <button
+            className="btn-primary"
+            onClick={() => { if (input.trim()) handleSendPrompt(input); }}
+            style={{ padding: "0 22px", height: "48px" }}
+          >
+            Execute →
           </button>
         </div>
       </div>
 
-      {/* Right: Mode guide */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      {/* Right: Bob Architectural Specs & Context Inspector */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+        {/* Bob Modes Spec */}
         <div className="glass-card" style={{ padding: "20px" }}>
-          <h4 style={{ fontSize: "13px", fontWeight: 700, marginBottom: "14px", color: "var(--text-secondary)" }}>
-            BOB MODES
+          <h4 style={{ fontSize: "12px", fontWeight: 700, marginBottom: "12px", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            NATIVE BOB 2.0 CAPABILITIES
           </h4>
-          {([
-            { mode: "ask",   icon: "🔍", desc: "Analyze codebase, find patterns, map data flows" },
-            { mode: "plan",  icon: "📋", desc: "Create risk register, prioritize fixes, estimate effort" },
-            { mode: "agent", icon: "⚡", desc: "Generate code diff, open PR, apply approved changes" },
-          ] as const).map(({ mode, icon, desc }) => (
-            <div key={mode} style={{
-              padding: "12px", borderRadius: "8px", marginBottom: "8px",
-              background: activeMode === mode ? `rgba(${mode === "ask" ? "56,139,253" : mode === "plan" ? "188,140,255" : "63,185,80"},0.08)` : "rgba(255,255,255,0.02)",
-              border: `1px solid ${activeMode === mode ? modeColors[mode] + "44" : "transparent"}`,
-              cursor: "pointer", transition: "all 0.2s",
-            }} onClick={() => setActiveMode(mode)}>
-              <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "4px" }}>
+          {[
+            { mode: "ask",   icon: "🔍", title: "Ask Mode", desc: "Global codebase semantic query across 270k context" },
+            { mode: "plan",  icon: "📋", title: "Plan Mode", desc: "Prioritizes clinical risk registers & governance" },
+            { mode: "agent", icon: "⚡", title: "Agent Mode", desc: "Autonomous AST patches with Human-in-the-Loop review" },
+          ].map(({ mode, icon, title, desc }) => (
+            <div
+              key={mode}
+              onClick={() => setActiveMode(mode as any)}
+              style={{
+                padding: "12px", borderRadius: "10px", marginBottom: "8px",
+                background: activeMode === mode ? `rgba(${mode === "ask" ? "56,139,253" : mode === "plan" ? "188,140,255" : "63,185,80"},0.12)` : "rgba(255,255,255,0.02)",
+                border: `1px solid ${activeMode === mode ? modeColors[mode as keyof typeof modeColors] : "transparent"}`,
+                cursor: "pointer", transition: "all 0.2s",
+              }}
+            >
+              <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "3px" }}>
                 <span>{icon}</span>
-                <span style={{ fontSize: "12px", fontWeight: 700, color: modeColors[mode], textTransform: "uppercase" }}>{mode}</span>
+                <span style={{ fontSize: "12px", fontWeight: 700, color: modeColors[mode as keyof typeof modeColors] }}>
+                  {title}
+                </span>
               </div>
-              <div style={{ fontSize: "11px", color: "var(--text-muted)", lineHeight: 1.5 }}>{desc}</div>
+              <div style={{ fontSize: "11px", color: "var(--text-secondary)", lineHeight: 1.4 }}>
+                {desc}
+              </div>
             </div>
           ))}
         </div>
 
+        {/* Loaded Context Files */}
         <div className="glass-card" style={{ padding: "20px" }}>
-          <h4 style={{ fontSize: "13px", fontWeight: 700, marginBottom: "14px", color: "var(--text-secondary)" }}>
-            CONTEXT LOADED
-          </h4>
-          {["Wards.jsx", "Pharmacy.jsx", "Billing.jsx", "MediSentinel™", "Lab", "Analytics", "Patients", "Appointments", "Doctors", "Auth", "Notifications"].map(m => (
-            <div key={m} style={{
-              display: "flex", justifyContent: "space-between", alignItems: "center",
-              padding: "5px 0", borderBottom: "1px solid rgba(255,255,255,0.03)",
-            }}>
-              <span className="mono" style={{ fontSize: "11px", color: "var(--text-secondary)" }}>{m}</span>
-              <span style={{ fontSize: "10px", color: "var(--accent-green)" }}>✓</span>
-            </div>
-          ))}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+            <h4 style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              ACTIVE AST CONTEXT (11)
+            </h4>
+            <span style={{ fontSize: "10px", color: "var(--accent-cyan)", fontWeight: 700 }}>270k TOKENS</span>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            {[
+              { name: "Wards.jsx", size: "14.2 kb", gap: true },
+              { name: "Pharmacy.jsx", size: "12.8 kb", gap: true },
+              { name: "Billing.jsx", size: "18.4 kb", gap: true },
+              { name: "sentinelData.js", size: "26.1 kb", gap: false },
+              { name: "Lab.jsx", size: "11.5 kb", gap: false },
+              { name: "Analytics.jsx", size: "15.9 kb", gap: true },
+              { name: "Admission.jsx", size: "9.8 kb", gap: false },
+              { name: "Doctors.jsx", size: "8.4 kb", gap: false },
+            ].map(m => (
+              <div key={m.name} style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: "6px 8px", background: "rgba(0,0,0,0.2)", borderRadius: "6px",
+                border: "1px solid rgba(255,255,255,0.04)",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span className="mono" style={{ fontSize: "11px", color: m.gap ? "#ff7b72" : "var(--text-primary)" }}>
+                    {m.name}
+                  </span>
+                  {m.gap && <span style={{ fontSize: "9px", background: "rgba(248,81,73,0.2)", color: "#ff7b72", padding: "1px 4px", borderRadius: "3px" }}>GAP</span>}
+                </div>
+                <span className="mono" style={{ fontSize: "10px", color: "var(--text-muted)" }}>{m.size}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
