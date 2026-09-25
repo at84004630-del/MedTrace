@@ -9,6 +9,7 @@
 [![IBM Bob 2.0](https://img.shields.io/badge/IBM%20Bob-2.0%20Agentic-052FAD?style=flat)](https://www.ibm.com)
 [![Regulation](https://img.shields.io/badge/EU%20AI%20Act-Article%2050%20Compliant-3fb950?style=flat)]()
 [![NABH](https://img.shields.io/badge/NABH%205th%20Ed.-QPS.5%20Aligned-58d6e8?style=flat)]()
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-success?style=flat&logo=vercel)](https://medtrace-at84004630-4735s-projects.vercel.app)
 
 ---
 
