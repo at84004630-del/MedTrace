@@ -188,13 +188,16 @@ export default function BobSession({ isAnalyzing, analysisComplete }: BobSession
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const msgCounterRef = useRef(10);
+
   const handleSendPrompt = (text: string, modeOverride?: "ask" | "plan" | "agent") => {
     const mode = modeOverride || activeMode;
+    const msgId = msgCounterRef.current++;
     const userMsg: Message = {
-      id: `usr-${Date.now()}`,
+      id: `usr-${msgId}`,
       role: "user", mode,
       content: text,
-      timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+      timestamp: "00:03:" + (msgId < 10 ? "0" + msgId : msgId),
     };
 
     setMessages(prev => [...prev, userMsg]);
@@ -216,12 +219,13 @@ export default function BobSession({ isAnalyzing, analysisComplete }: BobSession
         replyContent = `⚡ **IBM Bob 2.0 (Agent Mode)**\n\nAutonomous patch prepared and validated against TypeScript compiler.\n\n\`\`\`typescript\n// Autonomous patch staged for merge\nexport const verifyIntegrity = (packet: HospitalTelemetry) => {\n  return crypto.createHash('sha256').update(JSON.stringify(packet)).digest('hex');\n};\n\`\`\`\n\n✅ Ready to deploy to MediCore dev server.`;
       }
 
+      const bobMsgId = msgCounterRef.current++;
       setMessages(prev => [...prev, {
-        id: `bob-${Date.now()}`,
+        id: `bob-${bobMsgId}`,
         role: "bob",
         content: replyContent,
         thoughtChain,
-        timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+        timestamp: "00:03:" + (bobMsgId < 10 ? "0" + bobMsgId : bobMsgId),
       }]);
       setStreaming(false);
     }, 1400);
@@ -477,7 +481,7 @@ export default function BobSession({ isAnalyzing, analysisComplete }: BobSession
           ].map(({ mode, icon, title, desc }) => (
             <div
               key={mode}
-              onClick={() => setActiveMode(mode as any)}
+              onClick={() => setActiveMode(mode as "ask" | "plan" | "agent")}
               style={{
                 padding: "12px", borderRadius: "10px", marginBottom: "8px",
                 background: activeMode === mode ? `rgba(${mode === "ask" ? "56,139,253" : mode === "plan" ? "188,140,255" : "63,185,80"},0.12)` : "rgba(255,255,255,0.02)",
