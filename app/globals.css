@@ -367,3 +367,101 @@ html, body {
   }
 }
 
+/* ── Fullscreen Holographic Laser Scan Sweep ── */
+@keyframes laser-sweep {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+.laser-scan-beam {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent 0%, #58d6e8 25%, #ffffff 50%, #388bfd 75%, transparent 100%);
+  box-shadow: 0 0 20px #58d6e8, 0 0 40px #388bfd, 0 0 80px rgba(88, 214, 232, 0.6);
+  z-index: 9999;
+  pointer-events: none;
+  animation: laser-sweep 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.laser-scan-grid {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(56, 139, 253, 0.12) 0%, transparent 80%);
+  z-index: 9998;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* ── Oscilloscope Medical Vitals Monitor Styling ── */
+.oscilloscope-canvas {
+  background: rgba(2, 8, 14, 0.95);
+  border: 1px solid rgba(88, 214, 232, 0.25);
+  border-radius: 12px;
+  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.8), 0 0 15px rgba(56, 139, 253, 0.15);
+}
+
+/* ── Holographic Shimmer Border ── */
+.hologram-card {
+  position: relative;
+  background: var(--bg-card);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 16px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+.hologram-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 17px;
+  background: linear-gradient(135deg, rgba(88, 214, 232, 0.4) 0%, rgba(56, 139, 253, 0.1) 40%, rgba(188, 140, 255, 0.4) 70%, rgba(248, 81, 73, 0.2) 100%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ── High-Tech Cyber Pill & Command Palette ── */
+.kbd-shortcut {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  color: var(--text-secondary);
+}
+
+.cmd-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: var(--text-primary);
+}
+.cmd-item:hover, .cmd-item.selected {
+  background: rgba(56, 139, 253, 0.18);
+  border: 1px solid rgba(88, 214, 232, 0.4);
+  color: #fff;
+  transform: translateX(3px);
+}
+
+

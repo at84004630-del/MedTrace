@@ -6,9 +6,10 @@ interface HeaderProps {
   isAnalyzing: boolean;
   analysisComplete: boolean;
   onTriggerScan?: () => void;
+  onOpenCommandPalette?: () => void;
 }
 
-export default function Header({ isAnalyzing, analysisComplete, onTriggerScan }: HeaderProps) {
+export default function Header({ isAnalyzing, analysisComplete, onTriggerScan, onOpenCommandPalette }: HeaderProps) {
   const [hospital, setHospital] = useState("Metro General Hospital · Central ICU & Inpatient Wards (540 Beds)");
   const [liveStream, setLiveStream] = useState(true);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -221,6 +222,24 @@ export default function Header({ isAnalyzing, analysisComplete, onTriggerScan }:
               DPDP 2023
             </span>
           </div>
+
+          {/* Command Palette Trigger */}
+          <button
+            onClick={onOpenCommandPalette}
+            style={{
+              display: "flex", alignItems: "center", gap: "6px",
+              background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)",
+              borderRadius: "8px", padding: "6px 12px", fontSize: "11px",
+              color: "var(--text-secondary)", cursor: "pointer",
+              transition: "all 0.2s",
+            }}
+            className="hover:border-accent-cyan"
+            title="Open Command Center (Ctrl+K / Cmd+K)"
+          >
+            <span style={{ fontSize: "12px" }}>⚡</span>
+            <span className="kbd-shortcut">⌘K</span>
+            <span style={{ display: "none" }} className="sm:inline">Command</span>
+          </button>
 
           {/* Notifications bell */}
           <div style={{ position: "relative" }}>

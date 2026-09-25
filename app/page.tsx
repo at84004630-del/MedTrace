@@ -9,6 +9,9 @@ import HeroStats from "@/components/HeroStats";
 import CompliancePanel from "@/components/CompliancePanel";
 
 import Bobalytics from "@/components/Bobalytics";
+import VitalsOscilloscope from "@/components/VitalsOscilloscope";
+import CommandPalette from "@/components/CommandPalette";
+import LaserScanOverlay from "@/components/LaserScanOverlay";
 
 export type Tab = "nexus" | "passport" | "bob" | "bobalytics" | "compliance";
 
@@ -16,6 +19,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>("nexus");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   // Trigger AST analysis
   const handleTriggerScan = () => {
@@ -26,6 +30,18 @@ export default function Home() {
       setAnalysisComplete(true);
     }, 2400);
   };
+
+  // Keyboard shortcut listener for Cmd+K / Ctrl+K
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsCommandPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Simulate Bob analysis on first load
   useEffect(() => {
@@ -70,11 +86,23 @@ export default function Home() {
         pointerEvents: "none", zIndex: 0,
       }} />
 
+      {/* Fullscreen Laser Scan Beam on AST scan */}
+      <LaserScanOverlay isAnalyzing={isAnalyzing} />
+
+      {/* Global Command Palette (⌘K) */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onSelectTab={setActiveTab}
+        onTriggerScan={handleTriggerScan}
+      />
+
       <div style={{ position: "relative", zIndex: 1 }}>
         <Header
           isAnalyzing={isAnalyzing}
           analysisComplete={analysisComplete}
           onTriggerScan={handleTriggerScan}
+          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         />
 
         <main style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 24px 60px" }}>
@@ -82,6 +110,13 @@ export default function Home() {
             analysisComplete={analysisComplete}
             isAnalyzing={isAnalyzing}
             onSelectTab={setActiveTab}
+          />
+
+          {/* Real-time Inpatient Vitals Oscilloscope with Crisis Simulator */}
+          <VitalsOscilloscope
+            onTriggerCrisisAlert={() => {
+              setActiveTab("passport");
+            }}
           />
 
           {/* Tab navigation */}
