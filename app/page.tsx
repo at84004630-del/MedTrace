@@ -12,6 +12,13 @@ import LaserScanOverlay from "@/components/LaserScanOverlay";
 import Bobalytics from "@/components/Bobalytics";
 import VitalsOscilloscope from "@/components/VitalsOscilloscope";
 import { Tab, Incident, DEMO_INCIDENT } from "@/lib/types";
+import {
+  IconIntake,
+  IconInvestigate,
+  IconFix,
+  IconReview,
+  IconRelease,
+} from "@/components/NavIcons";
 
 const HERO_STATS = [
   { value: "90s", label: "Root Cause MTTR", sub: "vs 2 hrs manual grep · -88%", color: "#38bdf8", tier: "cyan", icon: "⚡" },
@@ -20,12 +27,12 @@ const HERO_STATS = [
   { value: "8", label: "Auto-Tests Synthesized", sub: "unit + integration + regression", color: "#fbbf24", tier: "orange", icon: "🧪" },
 ];
 
-const TABS: { id: Tab; label: string; icon: string; hint: string; num: string }[] = [
-  { id: "incidents",   label: "Incident Intake",  icon: "🚨", hint: "Create & triage", num: "1" },
-  { id: "investigate", label: "Investigation",     icon: "🔍", hint: "Parallel agents", num: "2" },
-  { id: "fix",         label: "Fix & Tests",       icon: "⚡", hint: "Diff + auto tests", num: "3" },
-  { id: "review",      label: "AI Review",         icon: "🛡️", hint: "Healthcare checks", num: "4" },
-  { id: "release",     label: "Release Gate",      icon: "🚀", hint: "Deploy verdict", num: "5" },
+const TABS: { id: Tab; label: string; icon: React.ComponentType<{ size?: number; color?: string }>; hint: string; num: string }[] = [
+  { id: "incidents",   label: "Incident Intake",  icon: IconIntake, hint: "Create & triage", num: "1" },
+  { id: "investigate", label: "Investigation",     icon: IconInvestigate, hint: "Parallel agents", num: "2" },
+  { id: "fix",         label: "Fix & Tests",       icon: IconFix, hint: "Diff + auto tests", num: "3" },
+  { id: "review",      label: "AI Review",         icon: IconReview, hint: "Healthcare checks", num: "4" },
+  { id: "release",     label: "Release Gate",      icon: IconRelease, hint: "Deploy verdict", num: "5" },
 ];
 
 export default function Home() {
@@ -146,6 +153,8 @@ export default function Home() {
           onOpenAnalytics={() => setIsAnalyticsOpen(true)}
           onOpenVitals={() => setIsVitalsOpen(true)}
           activeIncident={activeIncident || (activeTab !== "incidents" ? DEMO_INCIDENT : null)}
+          activeTab={activeTab}
+          onSelectTab={setActiveTab}
         />
 
         <main style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 28px 80px" }}>
@@ -217,27 +226,35 @@ export default function Home() {
                 fontFamily: "'JetBrains Mono', monospace",
               }}>
                 <span style={{ color: "var(--text-muted)" }}>STAGES:</span>
-                {TABS.map((t, i) => (
-                  <span key={t.id} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <button
-                      onClick={() => setActiveTab(t.id)}
-                      style={{
-                        background: t.id === activeTab ? "rgba(56, 189, 248, 0.12)" : "transparent",
-                        border: t.id === activeTab ? "1px solid rgba(56, 189, 248, 0.3)" : "1px solid transparent",
-                        borderRadius: "6px",
-                        padding: "2px 8px",
-                        cursor: "pointer",
-                        color: t.id === activeTab ? "var(--accent-cyan)" : "var(--text-muted)",
-                        fontWeight: t.id === activeTab ? 700 : 400,
-                        fontFamily: "'JetBrains Mono', monospace", fontSize: "11px",
-                        transition: "all 0.15s",
-                      }}
-                    >
-                      {t.icon} {t.label}
-                    </button>
-                    {i < TABS.length - 1 && <span style={{ color: "rgba(255, 255, 255, 0.15)" }}>›</span>}
-                  </span>
-                ))}
+                {TABS.map((t, i) => {
+                  const Icon = t.icon;
+                  const isCurrent = t.id === activeTab;
+                  return (
+                    <span key={t.id} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <button
+                        onClick={() => setActiveTab(t.id)}
+                        style={{
+                          background: isCurrent ? "rgba(56, 189, 248, 0.12)" : "transparent",
+                          border: isCurrent ? "1px solid rgba(56, 189, 248, 0.3)" : "1px solid transparent",
+                          borderRadius: "6px",
+                          padding: "3px 8px",
+                          cursor: "pointer",
+                          color: isCurrent ? "var(--accent-cyan)" : "var(--text-muted)",
+                          fontWeight: isCurrent ? 700 : 400,
+                          fontFamily: "'JetBrains Mono', monospace", fontSize: "11px",
+                          transition: "all 0.15s",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <Icon size={12} color={isCurrent ? "#38bdf8" : "currentColor"} />
+                        <span>{t.label}</span>
+                      </button>
+                      {i < TABS.length - 1 && <span style={{ color: "rgba(255, 255, 255, 0.15)" }}>›</span>}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -255,13 +272,14 @@ export default function Home() {
               {TABS.map((tab) => {
                 const badge = tabBadge(tab.id);
                 const isActive = activeTab === tab.id;
+                const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`nav-tab ${isActive ? "active" : ""}`}
                   >
-                    <span style={{ fontSize: "14px" }}>{tab.icon}</span>
+                    <Icon size={15} color={isActive ? "#38bdf8" : "currentColor"} />
                     <span style={{ fontSize: "13px", fontWeight: isActive ? 700 : 500 }}>
                       {tab.label}
                     </span>

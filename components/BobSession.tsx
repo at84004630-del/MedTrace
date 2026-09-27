@@ -252,10 +252,17 @@ export default function BobSession({ isAnalyzing, analysisComplete }: BobSession
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{
               width: "36px", height: "36px", borderRadius: "10px",
-              background: "linear-gradient(135deg, #388bfd, #bc8cff)",
-              display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px",
-              boxShadow: "0 0 15px rgba(56, 139, 253, 0.35)",
-            }}>🤖</div>
+              background: "linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(168, 85, 247, 0.25) 100%)",
+              border: "1px solid rgba(56, 189, 248, 0.4)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 0 16px rgba(56, 189, 248, 0.35)",
+            }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+                <rect x="9" y="9" width="6" height="6" fill="#38bdf8" fillOpacity="0.25" />
+                <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3" />
+              </svg>
+            </div>
             <div>
               <div style={{ fontWeight: 800, fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
                 <span>IBM Bob 2.0 Agentic Workspace</span>

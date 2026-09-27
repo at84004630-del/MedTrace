@@ -2,6 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { Tab } from "@/lib/types";
+import {
+  IconIntake,
+  IconInvestigate,
+  IconFix,
+  IconReview,
+  IconRelease,
+  IconBobalytics,
+  IconVitals,
+  IconBolt,
+  IconHospital,
+} from "@/components/NavIcons";
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -17,7 +28,7 @@ interface CommandItem {
   category: "Navigation" | "Actions" | "Diagnostics";
   label: string;
   shortcut?: string;
-  icon: string;
+  icon: React.ReactNode;
   action: () => void;
 }
 
@@ -33,17 +44,17 @@ export default function CommandPalette({
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const commands: CommandItem[] = [
-    { id: "tab-incidents", category: "Navigation", label: "Jump to Incident Intake & Queue", shortcut: "⌘1", icon: "🚨", action: () => onSelectTab("incidents") },
-    { id: "tab-investigate", category: "Navigation", label: "Open Investigation Workspace (5 Subagents)", shortcut: "⌘2", icon: "🔍", action: () => onSelectTab("investigate") },
-    { id: "tab-fix", category: "Navigation", label: "Review Code Diff & Auto Tests", shortcut: "⌘3", icon: "⚡", action: () => onSelectTab("fix") },
-    { id: "tab-review", category: "Navigation", label: "AI Code Review & Healthcare Safety Checks", shortcut: "⌘4", icon: "🛡️", action: () => onSelectTab("review") },
-    { id: "tab-release", category: "Navigation", label: "Open Release Gate & Deployment Passport", shortcut: "⌘5", icon: "🚀", action: () => onSelectTab("release") },
-    { id: "act-scan", category: "Actions", label: "Rerun 5-Agent Parallel Swarm Investigation", shortcut: "↵", icon: "⚡", action: () => onTriggerScan() },
-    { id: "act-demo", category: "Actions", label: "Load Demo: ED Wait Time Discrepancy (INC-2026-0847)", icon: "🏥", action: () => onSelectTab("investigate") },
-    { id: "act-hipaa", category: "Diagnostics", label: "Run HIPAA §164.312 PHI Leak Audit", icon: "🔒", action: () => onSelectTab("review") },
-    { id: "act-tests", category: "Diagnostics", label: "Synthesize Vitest Automated Regression Suite", icon: "🧪", action: () => onSelectTab("fix") },
-    ...(onOpenAnalytics ? [{ id: "act-bobalytics", category: "Diagnostics" as const, label: "Open Bobalytics™ (Clinical ROI & Token Velocity)", shortcut: "⌘B", icon: "📊", action: () => onOpenAnalytics() }] : []),
-    ...(onOpenVitals ? [{ id: "act-vitals", category: "Diagnostics" as const, label: "Open Live Vitals Oscilloscope (Real-time 60FPS ECG Stream)", shortcut: "⌘V", icon: "🫀", action: () => onOpenVitals() }] : []),
+    { id: "tab-incidents", category: "Navigation", label: "Jump to Incident Intake & Queue", shortcut: "⌘1", icon: <IconIntake size={16} color="#38bdf8" />, action: () => onSelectTab("incidents") },
+    { id: "tab-investigate", category: "Navigation", label: "Open Investigation Workspace (5 Subagents)", shortcut: "⌘2", icon: <IconInvestigate size={16} color="#38bdf8" />, action: () => onSelectTab("investigate") },
+    { id: "tab-fix", category: "Navigation", label: "Review Code Diff & Auto Tests", shortcut: "⌘3", icon: <IconFix size={16} color="#38bdf8" />, action: () => onSelectTab("fix") },
+    { id: "tab-review", category: "Navigation", label: "AI Code Review & Healthcare Safety Checks", shortcut: "⌘4", icon: <IconReview size={16} color="#34d399" />, action: () => onSelectTab("review") },
+    { id: "tab-release", category: "Navigation", label: "Open Release Gate & Deployment Passport", shortcut: "⌘5", icon: <IconRelease size={16} color="#c084fc" />, action: () => onSelectTab("release") },
+    { id: "act-scan", category: "Actions", label: "Rerun 5-Agent Parallel Swarm Investigation", shortcut: "↵", icon: <IconBolt size={16} color="#f59e0b" />, action: () => onTriggerScan() },
+    { id: "act-demo", category: "Actions", label: "Load Demo: ED Wait Time Discrepancy (INC-2026-0847)", icon: <IconHospital size={16} color="#38bdf8" />, action: () => onSelectTab("investigate") },
+    { id: "act-hipaa", category: "Diagnostics", label: "Run HIPAA §164.312 PHI Leak Audit", icon: <IconReview size={16} color="#ef4444" />, action: () => onSelectTab("review") },
+    { id: "act-tests", category: "Diagnostics", label: "Synthesize Vitest Automated Regression Suite", icon: <IconFix size={16} color="#fbbf24" />, action: () => onSelectTab("fix") },
+    ...(onOpenAnalytics ? [{ id: "act-bobalytics", category: "Diagnostics" as const, label: "Open Bobalytics™ (Clinical ROI & Token Velocity)", shortcut: "⌘B", icon: <IconBobalytics size={16} color="#c084fc" />, action: () => onOpenAnalytics() }] : []),
+    ...(onOpenVitals ? [{ id: "act-vitals", category: "Diagnostics" as const, label: "Open Live Vitals Oscilloscope (Real-time 60FPS ECG Stream)", shortcut: "⌘V", icon: <IconVitals size={16} color="#38bdf8" />, action: () => onOpenVitals() }] : []),
   ];
 
   const filtered = commands.filter(c =>
