@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Incident } from "@/lib/types";
+import { IconTestTube, IconCheck } from "@/components/NavIcons";
 
 interface FixWorkspaceProps {
   incident: Incident;
@@ -178,15 +179,133 @@ const STRATEGIES: FixStrategy[] = [
   },
 ];
 
-const TEST_RESULTS = [
-  { name: "QueueService: returns 0 when no active patients", status: "pass", time: "4ms" },
-  { name: "QueueService: counts only active patients", status: "pass", time: "6ms" },
-  { name: "QueueService: does not expose patient_id in logs", status: "pass", time: "3ms" },
-  { name: "WaitTimeController: /api/ed/wait-time matches patient_queue count", status: "pass", time: "18ms" },
-  { name: "EmergencyDashboard: renders corrected wait time", status: "pass", time: "22ms" },
-  { name: "EmergencyDashboard: refreshes data every 60s", status: "pass", time: "11ms" },
-  { name: "QueueService: legacy slot-based calculation removed", status: "pass", time: "5ms" },
-  { name: "Security: no PHI in QueueService error logs", status: "pass", time: "2ms" },
+export interface TestCase {
+  id: string;
+  name: string;
+  category: "Integration" | "Unit" | "Regression" | "Security";
+  suite: string;
+  endpoint?: string;
+  time: string;
+  desc: string;
+  assertion: string;
+  details: {
+    request?: string;
+    expected: string;
+    received: string;
+    contract?: string;
+  };
+}
+
+const TEST_CASES: TestCase[] = [
+  {
+    id: "TC-01",
+    category: "Integration",
+    suite: "WaitTimeController.test.js:42",
+    endpoint: "GET /api/ed/wait-time",
+    name: "WaitTimeController: /api/ed/wait-time matches patient_queue count",
+    time: "18ms",
+    desc: "End-to-end integration test validating controller aggregates live active queue depth instead of appointment slots.",
+    assertion: "const res = await request(app).get('/api/ed/wait-time');\nexpect(res.status).toBe(200);\nexpect(res.body.queueDepth).toEqual(4);\nexpect(res.body.waitMinutes).toEqual(18);",
+    details: {
+      request: "GET /api/ed/wait-time?dept=ED-MAIN",
+      expected: "HTTP 200 OK · { queueDepth: 4, waitMinutes: 18, status: 'nominal' }",
+      received: "HTTP 200 OK · { queueDepth: 4, waitMinutes: 18, status: 'nominal' }",
+      contract: "OpenAPI v3.1 / FHIR R4 Schedule Resource",
+    },
+  },
+  {
+    id: "TC-02",
+    category: "Integration",
+    suite: "EmergencyDashboard.test.jsx:88",
+    endpoint: "WebSocket /live/triage/stream",
+    name: "EmergencyDashboard: renders corrected live wait time",
+    time: "22ms",
+    desc: "Component integration test verifying React HUD renders live queue depth without frozen zero-minute state.",
+    assertion: "render(<EmergencyDashboard />);\nawait waitFor(() => {\n  expect(screen.getByTestId('live-wait-time')).toHaveTextContent('18 min');\n  expect(screen.queryByText('0 min')).not.toBeInTheDocument();\n});",
+    details: {
+      expected: "Dashboard HUD unfreezes and renders '18 min' live estimate",
+      received: "Rendered in 22ms with zero layout shift (CLS: 0.00)",
+    },
+  },
+  {
+    id: "TC-03",
+    category: "Integration",
+    suite: "EmergencyDashboard.test.jsx:134",
+    endpoint: "Cron / Polling Telemetry Heartbeat",
+    name: "EmergencyDashboard: refreshes data telemetry every 60s",
+    time: "11ms",
+    desc: "Heartbeat integration test confirming periodic background telemetry refreshes without memory leaks or race conditions.",
+    assertion: "jest.advanceTimersByTime(60000);\nexpect(fetchQueueDepthSpy).toHaveBeenCalledTimes(2);\nexpect(memoryProfile.heapDelta).toBeLessThan(1024 * 50);",
+    details: {
+      expected: "Background interval triggers fresh query every 60,000ms",
+      received: "Timer dispatched on schedule (jitter < 3ms)",
+    },
+  },
+  {
+    id: "TC-04",
+    category: "Unit",
+    suite: "QueueService.test.js:18",
+    name: "QueueService: returns 0 when no active patients exist",
+    time: "4ms",
+    desc: "Edge-case unit test verifying boundary condition when department queue is genuinely empty.",
+    assertion: "await db('patient_queue').truncate();\nconst depth = await queueService.getQueueDepth('ED');\nexpect(depth).toBe(0);\nexpect(typeof depth).toBe('number');",
+    details: {
+      expected: "Exact integer 0 (guarantees zero NaN / undefined downstream)",
+      received: "0",
+    },
+  },
+  {
+    id: "TC-05",
+    category: "Unit",
+    suite: "QueueService.test.js:32",
+    name: "QueueService: counts only active patients in emergency queue",
+    time: "6ms",
+    desc: "Unit test asserting that Knex query WHERE status = 'active' filters out discharged or scheduled rows.",
+    assertion: "const depth = await queueService.getQueueDepth('ED');\nexpect(depth).toBe(4); // Excludes 6 discharged + 3 reserved slots",
+    details: {
+      expected: "Aggregates only rows where status === 'active'",
+      received: "4 active rows returned",
+    },
+  },
+  {
+    id: "TC-06",
+    category: "Regression",
+    suite: "QueueService.test.js:55",
+    name: "QueueService: legacy slot-based calculation removed",
+    time: "5ms",
+    desc: "Regression prevention test verifying obsolete appointment_slots query paths are completely tombstoned.",
+    assertion: "const querySpy = jest.spyOn(mockDb, 'query');\nawait queueService.getQueueDepth('ED');\nexpect(querySpy).not.toHaveBeenCalledWith(expect.stringContaining('appointment_slots'));",
+    details: {
+      expected: "Zero queries directed to deprecated appointment_slots table",
+      received: "0 legacy queries executed",
+    },
+  },
+  {
+    id: "TC-07",
+    category: "Security",
+    suite: "SecurityAudit.test.js:14",
+    name: "QueueService: does not expose patient_id in logs",
+    time: "3ms",
+    desc: "HIPAA §164.312 unit audit confirming error logging uses sanitized operational trace IDs without patient MRN or ID.",
+    assertion: "const logSpy = jest.spyOn(console, 'error');\nawait queueService.handleQueueError({ id: 'PAT-9912' }, new Error('Sync failed'));\nexpect(logSpy.mock.calls[0][0]).not.toContain('PAT-9912');\nexpect(logSpy.mock.calls[0][0]).toMatch(/traceId=/);",
+    details: {
+      expected: "Log string sanitized of patient MRN, ID, DOB, or SSN",
+      received: "[Queue Error] [traceId=tr-20260927-01] Queue sync failed",
+    },
+  },
+  {
+    id: "TC-08",
+    category: "Security",
+    suite: "SecurityAudit.test.js:28",
+    name: "Security: zero PHI in QueueService error logs AST scan",
+    time: "2ms",
+    desc: "Regex static AST scan over the entire patch changeset to guarantee zero inadvertent PHI token exposures.",
+    assertion: "const astViolations = scanDiffForPHI(diffContent);\nexpect(astViolations).toHaveLength(0);",
+    details: {
+      expected: "0 PHI violations detected across entire diff changeset",
+      received: "0 violations (HIPAA Compliant)",
+    },
+  },
 ];
 
 export default function FixWorkspace({ incident, analysisComplete, onProceedToReview }: FixWorkspaceProps) {
@@ -198,6 +317,8 @@ export default function FixWorkspace({ incident, analysisComplete, onProceedToRe
   const [testsRunning, setTestsRunning] = useState(false);
   const [testsComplete, setTestsComplete] = useState(false);
   const [passedTests, setPassedTests] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState<"ALL" | "Integration" | "Unit" | "Regression" | "Security">("ALL");
+  const [expandedTestId, setExpandedTestId] = useState<string | null>("TC-01");
   const tickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const IMPL_PLAN = selectedStrategy.plan;
@@ -221,23 +342,29 @@ export default function FixWorkspace({ incident, analysisComplete, onProceedToRe
     };
   }, []);
 
+  const runTests = () => {
+    if (tickTimerRef.current) clearTimeout(tickTimerRef.current);
+    setTestsRunning(true);
+    setTestsComplete(false);
+    setPassedTests(0);
+    let i = 0;
+    const tick = () => {
+      if (i >= TEST_CASES.length) {
+        setTestsRunning(false);
+        setTestsComplete(true);
+        showToast("✓ All 8 automated unit & integration tests passed!");
+        return;
+      }
+      setPassedTests(p => p + 1);
+      i++;
+      tickTimerRef.current = setTimeout(tick, 220 + Math.random() * 120);
+    };
+    tickTimerRef.current = setTimeout(tick, 350);
+  };
+
   const handleApproveAndImplement = () => {
     setPlanApproved(true);
-    tickTimerRef.current = setTimeout(() => {
-      setTestsRunning(true);
-      let i = 0;
-      const tick = () => {
-        if (i >= TEST_RESULTS.length) {
-          setTestsRunning(false);
-          setTestsComplete(true);
-          return;
-        }
-        setPassedTests(p => p + 1);
-        i++;
-        tickTimerRef.current = setTimeout(tick, 280 + Math.random() * 150);
-      };
-      tickTimerRef.current = setTimeout(tick, 600);
-    }, 800);
+    runTests();
   };
 
   const diffLineColor = (line: string) => {
@@ -393,68 +520,246 @@ export default function FixWorkspace({ incident, analysisComplete, onProceedToRe
           </div>
 
           {/* Automated Test Suite Execution */}
-          {(testsRunning || testsComplete) && (
-            <div className="glass-card animate-slide-up" style={{ padding: "22px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <span style={{ fontSize: "18px" }}>🧪</span>
-                  <div>
-                    <h4 style={{ fontSize: "14px", fontWeight: 800, color: "#ffffff", fontFamily: "'Space Grotesk', sans-serif" }}>
-                      Automated Regression Test Suite
-                    </h4>
-                    <p style={{ fontSize: "10.5px", color: "var(--text-muted)", marginTop: "1px" }}>
-                      Unit + integration verification synthesized by Bob Agent Mode
-                    </p>
-                  </div>
+          <div className="glass-card animate-slide-up" style={{ padding: "20px 22px", border: "1px solid rgba(56, 189, 248, 0.2)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", flexWrap: "wrap", gap: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{
+                  width: "32px", height: "32px", borderRadius: "8px",
+                  background: "linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(168, 85, 247, 0.2))",
+                  border: "1px solid rgba(56, 189, 248, 0.35)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <IconTestTube size={17} color="#38bdf8" />
                 </div>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <h4 style={{ fontSize: "14px", fontWeight: 800, color: "#ffffff", fontFamily: "'Space Grotesk', sans-serif" }}>
+                      Automated Test Suite (Vitest)
+                    </h4>
+                    <span className="mono" style={{ fontSize: "10px", color: "var(--accent-cyan)" }}>
+                      8/8 Synthesized
+                    </span>
+                  </div>
+                  <p style={{ fontSize: "10.5px", color: "var(--text-muted)", marginTop: "1px" }}>
+                    End-to-end integration contracts, Knex queries, PHI audits & regression assertions
+                  </p>
+                </div>
+              </div>
 
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 {testsComplete ? (
                   <span className="badge badge-ok" style={{ fontSize: "10px" }}>8/8 PASSED (0 REGRESSIONS)</span>
-                ) : (
+                ) : testsRunning ? (
                   <span className="badge badge-medium" style={{ fontSize: "10px" }}>
-                    Executing {passedTests}/{TEST_RESULTS.length}…
+                    <span style={{ animation: "spin 1s linear infinite", display: "inline-block", marginRight: "4px" }}>⟳</span>
+                    Executing {passedTests}/{TEST_CASES.length}…
                   </span>
+                ) : (
+                  <span className="badge badge-cyan" style={{ fontSize: "10px" }}>READY TO EXECUTE</span>
                 )}
-              </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                {TEST_RESULTS.slice(0, passedTests).map((t, i) => (
-                  <div key={i} className="animate-fade-in" style={{
-                    display: "flex", justifyContent: "space-between", alignItems: "center",
-                    padding: "8px 12px", background: "rgba(16, 185, 129, 0.05)", borderRadius: "8px",
-                    border: "1px solid rgba(16, 185, 129, 0.18)", fontSize: "11.5px",
-                  }}>
-                    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                      <span style={{ color: "#34d399", fontWeight: 800 }}>✓</span>
-                      <span style={{ color: "var(--text-primary)" }}>{t.name}</span>
-                    </div>
-                    <span className="mono" style={{ color: "var(--text-muted)", fontSize: "10px" }}>{t.time}</span>
-                  </div>
-                ))}
-                {testsRunning && passedTests < TEST_RESULTS.length && (
-                  <div style={{
-                    padding: "8px 12px", fontSize: "11px", color: "#38bdf8",
-                    display: "flex", alignItems: "center", gap: "8px",
-                  }}>
-                    <span style={{ animation: "spin 1s linear infinite" }}>⟳</span>
-                    <span>Running test: {TEST_RESULTS[passedTests]?.name}…</span>
-                  </div>
-                )}
+                <button
+                  onClick={runTests}
+                  disabled={testsRunning}
+                  className="btn-secondary"
+                  style={{
+                    fontSize: "11px", padding: "6px 12px",
+                    display: "flex", alignItems: "center", gap: "5px",
+                    borderColor: "rgba(56, 189, 248, 0.3)",
+                    background: "rgba(56, 189, 248, 0.08)",
+                    color: "#38bdf8",
+                  }}
+                >
+                  <span>{testsComplete ? "⟳ Re-run Suite" : testsRunning ? "Running..." : "▶ Run Tests"}</span>
+                </button>
               </div>
-
-              {testsComplete && (
-                <div style={{
-                  marginTop: "14px", padding: "12px 16px",
-                  background: "rgba(16, 185, 129, 0.12)", border: "1px solid rgba(16, 185, 129, 0.35)",
-                  borderRadius: "10px", fontSize: "12px", color: "#34d399", fontWeight: 600,
-                  display: "flex", alignItems: "center", gap: "10px",
-                }}>
-                  <span style={{ fontSize: "16px" }}>🛡️</span>
-                  <span>All 8 tests passed with 0 regressions detected. Queue calculation bug verified resolved.</span>
-                </div>
-              )}
             </div>
-          )}
+
+            {/* Category Filter Pills */}
+            <div style={{ display: "flex", gap: "6px", marginBottom: "12px", flexWrap: "wrap" }}>
+              {(["ALL", "Integration", "Unit", "Regression", "Security"] as const).map(cat => {
+                const isSelected = selectedCategory === cat;
+                const count = cat === "ALL" ? TEST_CASES.length : TEST_CASES.filter(t => t.category === cat).length;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    style={{
+                      padding: "4px 10px",
+                      borderRadius: "6px",
+                      fontSize: "10.5px",
+                      fontFamily: "'Space Grotesk', sans-serif",
+                      fontWeight: isSelected ? 700 : 500,
+                      border: isSelected ? "1px solid rgba(56, 189, 248, 0.5)" : "1px solid rgba(255, 255, 255, 0.06)",
+                      background: isSelected ? "rgba(56, 189, 248, 0.15)" : "rgba(255, 255, 255, 0.02)",
+                      color: isSelected ? "#38bdf8" : "var(--text-muted)",
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
+                    }}
+                  >
+                    <span>{cat === "ALL" ? "All Tests" : cat === "Integration" ? "⚡ Integration" : cat}</span>
+                    <span style={{
+                      fontSize: "9px",
+                      padding: "1px 5px",
+                      borderRadius: "10px",
+                      background: isSelected ? "rgba(56, 189, 248, 0.25)" : "rgba(255, 255, 255, 0.06)",
+                      color: isSelected ? "#ffffff" : "var(--text-muted)",
+                      fontFamily: "'JetBrains Mono', monospace",
+                    }}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Test Case List */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              {TEST_CASES.filter(t => selectedCategory === "ALL" || t.category === selectedCategory).map((t, idx) => {
+                const originalIndex = TEST_CASES.findIndex(item => item.id === t.id);
+                const isPassed = testsComplete || originalIndex < passedTests;
+                const isCurrent = testsRunning && originalIndex === passedTests;
+                const isExpanded = expandedTestId === t.id;
+
+                const categoryBadge = {
+                  Integration: { bg: "rgba(56, 189, 248, 0.12)", border: "rgba(56, 189, 248, 0.3)", color: "#38bdf8", label: "INTEGRATION" },
+                  Unit: { bg: "rgba(52, 211, 153, 0.12)", border: "rgba(52, 211, 153, 0.3)", color: "#34d399", label: "UNIT" },
+                  Regression: { bg: "rgba(192, 132, 252, 0.12)", border: "rgba(192, 132, 252, 0.3)", color: "#c084fc", label: "REGRESSION" },
+                  Security: { bg: "rgba(251, 191, 36, 0.12)", border: "rgba(251, 191, 36, 0.3)", color: "#fbbf24", label: "SECURITY" },
+                }[t.category];
+
+                return (
+                  <div
+                    key={t.id}
+                    className="animate-fade-in"
+                    style={{
+                      borderRadius: "8px",
+                      border: isExpanded ? "1px solid rgba(56, 189, 248, 0.35)" : "1px solid rgba(255, 255, 255, 0.05)",
+                      background: isExpanded
+                        ? "rgba(10, 22, 45, 0.85)"
+                        : isPassed
+                        ? "rgba(16, 185, 129, 0.04)"
+                        : "rgba(255, 255, 255, 0.02)",
+                      transition: "all 0.18s ease",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      onClick={() => setExpandedTestId(isExpanded ? null : t.id)}
+                      style={{
+                        display: "flex", justifyContent: "space-between", alignItems: "center",
+                        padding: "9px 12px", cursor: "pointer",
+                        fontSize: "11.5px",
+                      }}
+                    >
+                      <div style={{ display: "flex", gap: "9px", alignItems: "center", flex: 1, minWidth: 0 }}>
+                        <span style={{
+                          color: isPassed ? "#34d399" : isCurrent ? "#38bdf8" : "var(--text-muted)",
+                          fontWeight: 800, fontSize: "12px", width: "14px", textAlign: "center", flexShrink: 0,
+                        }}>
+                          {isPassed ? "✓" : isCurrent ? "⟳" : "○"}
+                        </span>
+                        
+                        <span style={{
+                          fontSize: "8.5px", padding: "1px 5px", borderRadius: "3px",
+                          background: categoryBadge.bg, color: categoryBadge.color,
+                          border: `1px solid ${categoryBadge.border}`,
+                          fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, flexShrink: 0,
+                        }}>
+                          {categoryBadge.label}
+                        </span>
+
+                        <span style={{
+                          color: isPassed ? "var(--text-primary)" : "var(--text-secondary)",
+                          fontWeight: isPassed ? 600 : 400,
+                          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                        }}>
+                          {t.name}
+                        </span>
+                      </div>
+
+                      <div style={{ display: "flex", gap: "10px", alignItems: "center", flexShrink: 0 }}>
+                        <span className="mono" style={{ color: "var(--text-muted)", fontSize: "10px" }}>
+                          {t.time}
+                        </span>
+                        <span style={{ fontSize: "10px", color: "var(--text-muted)", transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.15s ease" }}>
+                          ▼
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Expandable Diagnostic Drawer */}
+                    {isExpanded && (
+                      <div className="animate-fade-in" style={{
+                        padding: "10px 14px 12px",
+                        borderTop: "1px solid rgba(255, 255, 255, 0.05)",
+                        background: "rgba(4, 9, 20, 0.95)",
+                        fontSize: "11px",
+                      }}>
+                        <p style={{ color: "var(--text-secondary)", marginBottom: "8px", lineHeight: 1.5 }}>
+                          {t.desc}
+                        </p>
+
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "8px" }}>
+                          <div style={{ padding: "6px 8px", background: "rgba(255, 255, 255, 0.03)", borderRadius: "5px", border: "1px solid rgba(255, 255, 255, 0.05)" }}>
+                            <div className="mono" style={{ fontSize: "9.5px", color: "var(--text-muted)" }}>TEST FILE</div>
+                            <div className="mono" style={{ color: "#38bdf8", fontWeight: 600, fontSize: "10.5px" }}>{t.suite}</div>
+                          </div>
+
+                          {t.endpoint && (
+                            <div style={{ padding: "6px 8px", background: "rgba(255, 255, 255, 0.03)", borderRadius: "5px", border: "1px solid rgba(255, 255, 255, 0.05)" }}>
+                              <div className="mono" style={{ fontSize: "9.5px", color: "var(--text-muted)" }}>TARGET ENDPOINT</div>
+                              <div className="mono" style={{ color: "#34d399", fontWeight: 600, fontSize: "10.5px" }}>{t.endpoint}</div>
+                            </div>
+                          )}
+                        </div>
+
+                        {t.details?.expected && (
+                          <div style={{
+                            padding: "6px 10px", background: "rgba(16, 185, 129, 0.06)",
+                            border: "1px solid rgba(16, 185, 129, 0.2)", borderRadius: "5px",
+                            marginBottom: "8px", fontSize: "10px", fontFamily: "'JetBrains Mono', monospace",
+                          }}>
+                            <span style={{ color: "var(--text-muted)" }}>ASSERTION CONTRACT: </span>
+                            <span style={{ color: "#34d399" }}>{t.details.expected}</span>
+                          </div>
+                        )}
+
+                        <div style={{
+                          padding: "8px 10px", background: "#02050e", borderRadius: "5px",
+                          border: "1px solid rgba(56, 189, 248, 0.15)",
+                          fontFamily: "'JetBrains Mono', monospace", fontSize: "10.5px",
+                          color: "#c9d1d9",
+                        }}>
+                          <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>{t.assertion}</pre>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Test Completion Verification Banner */}
+            {testsComplete && (
+              <div style={{
+                marginTop: "14px", padding: "12px 16px",
+                background: "linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 78, 59, 0.15))",
+                border: "1px solid rgba(16, 185, 129, 0.35)",
+                borderRadius: "10px", fontSize: "12px", color: "#34d399", fontWeight: 600,
+                display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <IconCheck size={18} color="#34d399" />
+                  <span>All 8 tests passed (3 integration · 3 unit · 1 regression · 2 security). Queue calculation verified nominal.</span>
+                </div>
+                <span className="mono" style={{ fontSize: "11px", color: "#34d399" }}>Duration: 66ms</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right: Implementation Plan */}

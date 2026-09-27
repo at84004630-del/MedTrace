@@ -103,7 +103,6 @@ export default function Home() {
     if (tab === "release") return analysisComplete ? "PASS" : undefined;
   };
 
-  if (!mounted) return null;
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-primary)" }}>
