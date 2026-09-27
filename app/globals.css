@@ -215,6 +215,13 @@ svg, svg * {
   backdrop-filter: blur(16px);
   -webkit-user-select: none;
   user-select: none;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.nav-tab-container::-webkit-scrollbar {
+  display: none;
 }
 
 .nav-tab {
@@ -232,6 +239,8 @@ svg, svg * {
   user-select: none !important;
   -webkit-user-select: none !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .nav-tab:hover {
   color: #ffffff;
@@ -268,10 +277,132 @@ svg, svg * {
   }
 }
 
+@media (max-width: 980px) {
+  .header-workflow-nav {
+    display: none !important;
+  }
+}
+
 @media (max-width: 900px) {
   .incident-capsule {
     display: none !important;
   }
+}
+
+@media (max-width: 640px) {
+  .nav-logo-sublabel {
+    display: none !important;
+  }
+  #nav-search-button {
+    min-width: 36px !important;
+    width: 36px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+  }
+  #nav-search-button kbd,
+  #nav-search-button .nav-search-label {
+    display: none !important;
+  }
+  .nav-tool-btn {
+    padding: 6px 8px !important;
+  }
+}
+
+/* ── Responsive Grid Layouts (Desktop & Mobile Adaptive) ── */
+.responsive-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+@media (min-width: 1024px) {
+  .responsive-dashboard-grid {
+    grid-template-columns: 1.25fr 1fr;
+    gap: 24px;
+  }
+}
+
+.responsive-investigate-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+@media (min-width: 1024px) {
+  .responsive-investigate-grid {
+    grid-template-columns: 1.55fr 1fr;
+    gap: 24px;
+  }
+}
+
+.responsive-fix-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+@media (min-width: 1024px) {
+  .responsive-fix-grid {
+    grid-template-columns: 1.45fr 1fr;
+    gap: 24px;
+  }
+}
+
+.responsive-review-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+@media (min-width: 1024px) {
+  .responsive-review-grid {
+    grid-template-columns: 1.5fr 1fr;
+    gap: 24px;
+  }
+}
+
+.responsive-release-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+@media (min-width: 960px) {
+  .responsive-release-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+}
+
+.responsive-hero-stats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+@media (min-width: 540px) {
+  .responsive-hero-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .responsive-hero-stats {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+}
+
+.responsive-quick-templates {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+@media (min-width: 540px) {
+  .responsive-quick-templates {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Touch-friendly horizontal scrollers */
+.touch-scroll-row {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 
 /* ── Workflow Stepper ── */

@@ -188,7 +188,7 @@ export default function VitalsOscilloscope({ onTriggerCrisisAlert }: VitalsOscil
         </div>
 
         {/* Center: Live Canvas Oscilloscope */}
-        <div style={{ flex: 1, minWidth: "260px", maxWidth: "480px", height: "54px", position: "relative" }}>
+        <div style={{ flex: 1, minWidth: "min(260px, 100%)", maxWidth: "480px", height: "54px", position: "relative" }}>
           <canvas
             ref={canvasRef}
             width={480}
@@ -199,7 +199,7 @@ export default function VitalsOscilloscope({ onTriggerCrisisAlert }: VitalsOscil
         </div>
 
         {/* Right: Live Vital Numerics & Crisis Simulator Toggle */}
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
           <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: "9px", fontWeight: 700, color: "var(--text-muted)" }}>HEART RATE</div>

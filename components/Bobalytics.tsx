@@ -141,7 +141,7 @@ export default function Bobalytics() {
           </div>
 
           {/* Results Grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 160px), 1fr))", gap: "12px" }}>
             <div style={{ background: "rgba(248,81,73,0.08)", border: "1px solid rgba(248,81,73,0.25)", borderRadius: "10px", padding: "14px" }}>
               <div style={{ fontSize: "11px", color: "var(--critical)", fontWeight: 700, textTransform: "uppercase" }}>
                 Near-Misses Caught

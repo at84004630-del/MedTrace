@@ -362,7 +362,7 @@ END OF AUDIT DOSSIER — CONFIDENTIAL & PRIVILEGED CLINICAL RECORD
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: "12px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 300px), 1fr))", gap: "12px" }}>
           {filteredGateChecks.map((g) => (
             <div
               key={g.id}
@@ -418,7 +418,7 @@ END OF AUDIT DOSSIER — CONFIDENTIAL & PRIVILEGED CLINICAL RECORD
         </div>
 
         {/* Dual Side-by-Side Comparison */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginBottom: "24px" }}>
+        <div className="responsive-release-grid" style={{ marginBottom: "24px" }}>
 
           {/* Left: Traditional Manual Workflow */}
           <div style={{

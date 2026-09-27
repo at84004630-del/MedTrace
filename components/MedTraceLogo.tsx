@@ -235,6 +235,7 @@ export default function MedTraceLogo({
         {/* Clinical target sub-label */}
         {showTarget && (
           <div
+            className="nav-logo-sublabel"
             style={{
               display: "flex",
               alignItems: "center",

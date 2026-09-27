@@ -418,7 +418,7 @@ export default function FixWorkspace({ incident, analysisComplete, onProceedToRe
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.45fr 1fr", gap: "24px" }}>
+      <div className="responsive-fix-grid">
 
         {/* Left: Code Diff & Automated Test Runner */}
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -898,14 +898,14 @@ export default function FixWorkspace({ incident, analysisComplete, onProceedToRe
             background: "rgba(2, 6, 16, 0.8)",
             backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            padding: "20px",
+            padding: "clamp(12px, 4vw, 24px)",
           }}
         >
           <div
             className="glass-card animate-slide-up"
             onClick={e => e.stopPropagation()}
             style={{
-              maxWidth: "680px", width: "100%", padding: "26px",
+              maxWidth: "680px", width: "100%", padding: "clamp(16px, 3vw, 26px)",
               background: "#050e1f", border: "1px solid rgba(56, 189, 248, 0.4)",
               boxShadow: "0 25px 70px rgba(0, 0, 0, 0.9)", borderRadius: "18px",
             }}
@@ -1000,7 +1000,8 @@ export default function FixWorkspace({ incident, analysisComplete, onProceedToRe
       {/* ── Real-time Toast Feedback ── */}
       {toastMessage && (
         <div style={{
-          position: "fixed", bottom: "30px", right: "30px", zIndex: 99999,
+          position: "fixed", bottom: "clamp(16px, 4vw, 30px)", right: "clamp(16px, 4vw, 30px)", zIndex: 99999,
+          maxWidth: "calc(100vw - 32px)",
           background: "rgba(6, 16, 32, 0.95)", border: "1px solid rgba(56, 189, 248, 0.5)",
           boxShadow: "0 12px 35px rgba(0,0,0,0.8), 0 0 25px rgba(56, 189, 248, 0.25)",
           borderRadius: "12px", padding: "12px 20px", color: "#38bdf8",

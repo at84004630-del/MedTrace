@@ -116,6 +116,7 @@ export default function Header({
         {onSelectTab && (
           <nav
             aria-label="Workflow Stages"
+            className="header-workflow-nav"
             style={{
               display: "flex",
               alignItems: "center",

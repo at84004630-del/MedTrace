@@ -100,7 +100,7 @@ export default function CommandPalette({
         background: "rgba(2, 6, 16, 0.8)",
         backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
         display: "flex", alignItems: "flex-start", justifyContent: "center",
-        paddingTop: "12vh",
+        padding: "clamp(16px, 10vh, 80px) 16px 16px",
       }}
     >
       <div

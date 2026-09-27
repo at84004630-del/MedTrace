@@ -310,11 +310,13 @@ export default function IncidentDashboard({ onStartInvestigation, activeIncident
 
         {/* Stepper Track */}
         <div
+          className="touch-scroll-row"
           style={{
             display: "flex",
             alignItems: "stretch",
             gap: "0",
             overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
             padding: "4px 2px 10px 2px",
             scrollbarWidth: "thin",
           }}
@@ -510,14 +512,14 @@ export default function IncidentDashboard({ onStartInvestigation, activeIncident
       </div>
 
       {/* ── Main 2-Column Workspace ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1.25fr 1fr", gap: "24px" }}>
+      <div className="responsive-dashboard-grid">
         
         {/* ── Left Column: Issue Intake Studio ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          <div className="glass-card" style={{ padding: "26px", position: "relative" }}>
+          <div className="glass-card" style={{ padding: "clamp(18px, 3vw, 26px)", position: "relative" }}>
             
             {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{
                   width: "36px", height: "36px", borderRadius: "10px",
@@ -555,7 +557,7 @@ export default function IncidentDashboard({ onStartInvestigation, activeIncident
               }}>
                 One-Click Incident Presets:
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+              <div className="responsive-quick-templates">
                 {QUICK_TEMPLATES.map((t, i) => {
                   const Icon = t.icon;
                   const isSelected = selectedTemplate === i;

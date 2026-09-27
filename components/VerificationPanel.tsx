@@ -219,7 +219,7 @@ export default function VerificationPanel({ incident, onProceedToRelease }: Veri
           </div>
 
           {/* Dual Score Rings */}
-          <div style={{ display: "flex", gap: "24px", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: "16px", alignItems: "center", flexWrap: "wrap" }}>
             {[
               {
                 title: "Code Review",
@@ -474,7 +474,7 @@ export default function VerificationPanel({ incident, onProceedToRelease }: Veri
       </div>
 
       {/* ── Main Two-Column Review Layout ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "24px", alignItems: "start" }}>
+      <div className="responsive-review-grid" style={{ alignItems: "start" }}>
 
         {/* LEFT: Check Items List */}
         <div className="glass-card" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "10px" }}>

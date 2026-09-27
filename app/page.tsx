@@ -156,11 +156,11 @@ export default function Home() {
           onSelectTab={setActiveTab}
         />
 
-        <main style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 28px 80px" }}>
+        <main style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 clamp(14px, 3vw, 28px) 80px" }}>
 
           {/* ── Hero section (Incidents tab only) ── */}
           {activeTab === "incidents" && (
-            <div className="animate-fade-in" style={{ padding: "40px 0 28px" }}>
+            <div className="animate-fade-in" style={{ padding: "clamp(24px, 4vw, 40px) 0 24px" }}>
               {/* Eyebrow badge */}
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "18px" }}>
                 <div style={{
@@ -179,7 +179,7 @@ export default function Home() {
 
               {/* H1 */}
               <h1 style={{
-                fontSize: "clamp(30px, 3.8vw, 48px)", fontWeight: 800, lineHeight: 1.15,
+                fontSize: "clamp(26px, 4.5vw, 48px)", fontWeight: 800, lineHeight: 1.15,
                 letterSpacing: "-0.035em", marginBottom: "14px",
                 fontFamily: "'Space Grotesk', sans-serif",
               }}>
@@ -189,8 +189,8 @@ export default function Home() {
 
               {/* Sub */}
               <p style={{
-                color: "var(--text-secondary)", fontSize: "15px", lineHeight: 1.65,
-                maxWidth: "680px", marginBottom: "32px", fontWeight: 400,
+                color: "var(--text-secondary)", fontSize: "clamp(13px, 2vw, 15px)", lineHeight: 1.65,
+                maxWidth: "680px", marginBottom: "28px", fontWeight: 400,
               }}>
                 MedTrace orchestrates{" "}
                 <strong style={{ color: "var(--text-primary)", fontWeight: 700 }}>5 specialist AI agents</strong>{" "}
@@ -198,7 +198,7 @@ export default function Home() {
               </p>
 
               {/* Stat tiles */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "14px", marginBottom: "10px" }}>
+              <div className="responsive-hero-stats">
                 {HERO_STATS.map((s, i) => (
                   <div
                     key={s.label}
@@ -218,11 +218,12 @@ export default function Home() {
 
           {/* ── Workflow breadcrumb strip (non-hero tabs) ── */}
           {activeTab !== "incidents" && (
-            <div style={{ padding: "20px 0 10px" }}>
+            <div style={{ padding: "16px 0 10px", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
               <div style={{
                 display: "flex", alignItems: "center", gap: "8px",
                 fontSize: "11px", color: "var(--text-muted)", marginBottom: "4px",
                 fontFamily: "'JetBrains Mono', monospace",
+                minWidth: "max-content",
               }}>
                 <span style={{ color: "var(--text-muted)" }}>STAGES:</span>
                 {TABS.map((t, i) => {

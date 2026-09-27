@@ -305,7 +305,7 @@ export default function InvestigationWorkspace({
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.55fr 1fr", gap: "24px" }}>
+      <div className="responsive-investigate-grid">
         {/* Left: Parallel Agents & Root Cause */}
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
 
