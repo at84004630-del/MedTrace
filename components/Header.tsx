@@ -1,302 +1,386 @@
 "use client";
 
-import { useState } from "react";
+import { Incident } from "@/lib/types";
 
 interface HeaderProps {
   isAnalyzing: boolean;
   analysisComplete: boolean;
-  onTriggerScan?: () => void;
-  onOpenCommandPalette?: () => void;
+  agentProgress: number;
+  onTriggerScan: () => void;
+  onOpenCommandPalette: () => void;
+  onOpenAnalytics?: () => void;
+  onOpenVitals?: () => void;
+  activeIncident: Incident | null;
 }
 
-export default function Header({ isAnalyzing, analysisComplete, onTriggerScan, onOpenCommandPalette }: HeaderProps) {
-  const [hospital, setHospital] = useState("Metro General Hospital · Central ICU & Inpatient Wards (540 Beds)");
-  const [liveStream, setLiveStream] = useState(true);
-  const [showNotifications, setShowNotifications] = useState(false);
-
-  const [showHospitalMenu, setShowHospitalMenu] = useState(false);
-
-  const hospitals = [
-    { name: "Metro General Hospital · Central ICU & Inpatient Wards (540 Beds)", badge: "3 Gaps", code: "MGH-ICU" },
-    { name: "Apollo Apex Institute · Cardiovascular ICU & Cath Lab (320 Beds)", badge: "1 Gap", code: "APOLLO-CCU" },
-    { name: "St. Jude Children's · Pediatric Oncology & Intensive Care (210 Beds)", badge: "2 Gaps", code: "STJ-PED" },
-  ];
-
+export default function Header({
+  isAnalyzing,
+  analysisComplete,
+  agentProgress,
+  onTriggerScan,
+  onOpenCommandPalette,
+  onOpenAnalytics,
+  onOpenVitals,
+  activeIncident,
+}: HeaderProps) {
   return (
     <header style={{
-      borderBottom: "1px solid var(--border)",
-      background: "rgba(4, 8, 14, 0.88)",
-      backdropFilter: "blur(20px)",
-      WebkitBackdropFilter: "blur(20px)",
-      position: "sticky", top: 0, zIndex: 50,
+      padding: "0 28px",
+      borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+      background: "rgba(5, 9, 20, 0.85)",
+      backdropFilter: "blur(24px) saturate(1.4)",
+      WebkitBackdropFilter: "blur(24px) saturate(1.4)",
+      position: "sticky",
+      top: 0,
+      zIndex: 50,
     }}>
+      {/* Top luminous accent beam */}
       <div style={{
-        maxWidth: "1440px", margin: "0 auto",
-        padding: "0 24px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        height: "68px",
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: "1.5px",
+        background: "linear-gradient(90deg, transparent 0%, #00f2fe 25%, #388bfd 50%, #bc8cff 75%, transparent 100%)",
+        opacity: isAnalyzing ? 1 : 0.6,
+      }} />
+
+      <div style={{
+        maxWidth: "1400px",
+        margin: "0 auto",
+        height: "64px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "20px",
       }}>
-        {/* Left: Logo & Hospital Selector */}
-        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+
+        {/* ── Brand & Repo Target ── */}
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", flexShrink: 0 }}>
+          {/* Logo badge with pulse halo */}
+          <div style={{
+            position: "relative",
+            width: "36px",
+            height: "36px",
+            borderRadius: "10px",
+            background: "linear-gradient(135deg, #0ea5e9 0%, #2563eb 55%, #7c3aed 100%)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "14px",
+            fontWeight: 900,
+            color: "#ffffff",
+            fontFamily: "'Space Grotesk', sans-serif",
+            boxShadow: "0 4px 18px rgba(14, 165, 233, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
+          }}>
+            MT
             <div style={{
-              width: "40px", height: "40px",
-              background: "linear-gradient(135deg, #0969da 0%, #58d6e8 100%)",
-              borderRadius: "12px",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "20px",
-              boxShadow: "0 0 20px rgba(88, 214, 232, 0.4)",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-            }}>🔬</div>
-            <div>
-              <div style={{ fontWeight: 900, fontSize: "19px", letterSpacing: "-0.03em", display: "flex", alignItems: "center", gap: "6px" }}>
-                <span>Med<span className="gradient-text">Trace</span></span>
-                <span style={{
-                  fontSize: "9px",
-                  padding: "2px 6px",
-                  borderRadius: "6px",
-                  background: "rgba(188, 140, 255, 0.15)",
-                  color: "var(--accent-purple)",
-                  border: "1px solid rgba(188, 140, 255, 0.3)",
-                  fontWeight: 700,
-                  letterSpacing: "0.05em",
-                }}>v2.4 PRO</span>
-              </div>
-              <div style={{ fontSize: "10px", color: "var(--text-muted)", letterSpacing: "0.08em", fontWeight: 600 }}>
-                POWERED BY IBM BOB 2.0 · 270K CONTEXT
-              </div>
-            </div>
+              position: "absolute",
+              bottom: "-2px",
+              right: "-2px",
+              width: "10px",
+              height: "10px",
+              borderRadius: "50%",
+              background: isAnalyzing ? "#38bdf8" : "#10b981",
+              border: "2px solid #050914",
+              boxShadow: isAnalyzing ? "0 0 8px #38bdf8" : "0 0 8px #10b981",
+            }} />
           </div>
 
-          {/* Hospital Scope Divider & Dropdown */}
-          <div style={{ display: "none", alignItems: "center", gap: "10px", position: "relative" }} className="md:flex">
-            <div style={{ width: "1px", height: "24px", background: "var(--border)" }} />
-            <button
-              onClick={() => setShowHospitalMenu(!showHospitalMenu)}
-              style={{
-                display: "flex", alignItems: "center", gap: "8px",
-                background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)",
-                borderRadius: "8px", padding: "6px 12px", fontSize: "12px",
-                color: "var(--text-secondary)", cursor: "pointer",
-                transition: "all 0.2s",
-              }}
-              className="hover:border-accent-cyan"
-            >
-              <span style={{ fontSize: "14px" }}>🏥</span>
-              <span style={{ fontWeight: 600, color: "var(--text-primary)", maxWidth: "260px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {hospital.split("·")[0]}
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{
+                fontWeight: 800,
+                fontSize: "17px",
+                letterSpacing: "-0.03em",
+                fontFamily: "'Space Grotesk', sans-serif",
+                background: "linear-gradient(180deg, #ffffff 30%, #94a3b8 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}>
+                MedTrace
               </span>
-              <span style={{ fontSize: "10px", color: "var(--accent-cyan)" }}>▼</span>
-            </button>
 
-            {showHospitalMenu && (
-              <div
-                className="glass-card animate-slide-up"
-                style={{
-                  position: "absolute", top: "42px", left: "10px",
-                  width: "360px", padding: "10px", zIndex: 100,
-                  background: "rgba(6, 14, 26, 0.96)",
-                  boxShadow: "0 16px 48px rgba(0,0,0,0.85)",
-                  border: "1px solid var(--border-bright)",
-                }}
-              >
-                <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-muted)", padding: "6px 10px", textTransform: "uppercase" }}>
-                  Select Hospital Facility
-                </div>
-                {hospitals.map(h => (
-                  <div
-                    key={h.code}
-                    onClick={() => {
-                      setHospital(h.name);
-                      setShowHospitalMenu(false);
-                      if (onTriggerScan) onTriggerScan();
-                    }}
-                    style={{
-                      padding: "10px 12px", borderRadius: "8px", cursor: "pointer",
-                      display: "flex", justifyContent: "space-between", alignItems: "center",
-                      background: hospital.startsWith(h.name.split("·")[0]) ? "rgba(56,139,253,0.15)" : "transparent",
-                      transition: "all 0.15s",
-                    }}
-                    className="hover:bg-card-hover"
-                  >
-                    <div>
-                      <div style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-primary)" }}>
-                        {h.name.split("·")[0]}
-                      </div>
-                      <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
-                        {h.name.split("·")[1]}
-                      </div>
-                    </div>
-                    <span className="badge badge-critical" style={{ fontSize: "9px" }}>
-                      {h.badge}
-                    </span>
-                  </div>
-                ))}
+              {/* IBM BOB badge */}
+              <span style={{
+                fontSize: "9.5px",
+                fontWeight: 700,
+                padding: "2px 8px",
+                borderRadius: "6px",
+                background: "linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)",
+                color: "#38bdf8",
+                border: "1px solid rgba(56, 189, 248, 0.35)",
+                letterSpacing: "0.06em",
+                fontFamily: "'JetBrains Mono', monospace",
+              }}>
+                IBM BOB 2.0
+              </span>
+            </div>
+
+            {/* Sub-label with hospital target */}
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "10.5px",
+              color: "var(--text-secondary)",
+              marginTop: "1px",
+              fontFamily: "'JetBrains Mono', monospace",
+            }}>
+              <span>🏥 st-jude-ehr</span>
+              <span style={{ color: "rgba(255, 255, 255, 0.2)" }}>/</span>
+              <span style={{ color: "var(--accent-cyan)" }}>v4.18-prod</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Active Incident Telemetry Capsule ── */}
+        {activeIncident ? (
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "14px",
+            background: "linear-gradient(180deg, rgba(13, 23, 44, 0.8) 0%, rgba(7, 14, 28, 0.9) 100%)",
+            border: "1px solid rgba(56, 189, 248, 0.25)",
+            borderRadius: "14px",
+            padding: "8px 18px",
+            maxWidth: "540px",
+            flex: 1,
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
+          }}>
+            {/* Live radar dot */}
+            <div style={{ position: "relative", width: "12px", height: "12px", flexShrink: 0 }}>
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                borderRadius: "50%",
+                background: isAnalyzing ? "#38bdf8" : analysisComplete ? "#10b981" : "#eab308",
+                boxShadow: isAnalyzing ? "0 0 12px #38bdf8" : analysisComplete ? "0 0 10px #10b981" : "0 0 8px #eab308",
+              }} />
+              {isAnalyzing && (
+                <div style={{
+                  position: "absolute",
+                  inset: "-4px",
+                  borderRadius: "50%",
+                  border: "1.5px solid #38bdf8",
+                  animation: "pulse-ring 1.6s cubic-bezier(0.215, 0.61, 0.355, 1) infinite",
+                }} />
+              )}
+            </div>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                fontSize: "10px",
+                fontFamily: "'JetBrains Mono', monospace",
+                marginBottom: "2px",
+              }}>
+                <span style={{ color: "var(--text-muted)", fontWeight: 700 }}>ACTIVE INVESTIGATION</span>
+                <span style={{ color: "rgba(255, 255, 255, 0.2)" }}>·</span>
+                <span style={{ color: "#38bdf8", fontWeight: 700 }}>{activeIncident.id}</span>
               </div>
-            )}
+              <div style={{
+                fontSize: "12px",
+                fontWeight: 600,
+                color: "#ffffff",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}>
+                {activeIncident.title}
+              </div>
+            </div>
+
+            {/* Progress gauge */}
+            <div style={{ flexShrink: 0, textAlign: "right", minWidth: "80px" }}>
+              <div style={{
+                fontSize: "12.5px",
+                fontWeight: 800,
+                color: isAnalyzing ? "#38bdf8" : analysisComplete ? "#34d399" : "#94a3b8",
+                fontFamily: "'JetBrains Mono', monospace",
+              }}>
+                {isAnalyzing ? `${agentProgress}%` : analysisComplete ? "✓ Verified" : "Ready"}
+              </div>
+              {isAnalyzing && (
+                <div style={{
+                  width: "80px",
+                  height: "4px",
+                  background: "rgba(255, 255, 255, 0.1)",
+                  borderRadius: "2px",
+                  overflow: "hidden",
+                  marginTop: "4px",
+                }}>
+                  <div style={{
+                    width: `${agentProgress}%`,
+                    height: "100%",
+                    background: "linear-gradient(90deg, #0ea5e9, #38bdf8)",
+                    borderRadius: "2px",
+                    transition: "width 0.4s ease-out",
+                  }} />
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div style={{ flex: 1 }} />
+        )}
 
-        {/* Center: Live Analysis Status Banner & Manual Scan Trigger */}
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          {isAnalyzing && (
-            <div style={{
-              display: "flex", alignItems: "center", gap: "10px",
-              background: "rgba(56,139,253,0.12)", border: "1px solid rgba(56,139,253,0.35)",
-              borderRadius: "9999px", padding: "6px 16px",
-              fontSize: "12px", color: "var(--accent-cyan)",
-              boxShadow: "0 0 15px rgba(56,139,253,0.2)",
-            }}>
-              <span style={{
-                width: "8px", height: "8px", borderRadius: "50%",
-                background: "var(--accent-cyan)",
-                display: "inline-block",
-              }} className="animate-pulse-ring" />
-              <span style={{ fontWeight: 600 }}>IBM Bob AST: Scanning 11 MediCore Modules...</span>
-            </div>
-          )}
-
-          {analysisComplete && !isAnalyzing && (
-            <div style={{
-              display: "flex", alignItems: "center", gap: "8px",
-              background: "rgba(63,185,80,0.1)", border: "1px solid rgba(63,185,80,0.3)",
-              borderRadius: "9999px", padding: "6px 14px",
-              fontSize: "12px", color: "var(--accent-green)",
-              boxShadow: "0 0 15px rgba(63,185,80,0.15)",
-            }}>
-              <span style={{
-                width: "8px", height: "8px", borderRadius: "50%",
-                background: "var(--accent-green)",
-                display: "inline-block",
-              }} className="animate-pulse-green" />
-              <span style={{ fontWeight: 600 }}>Active Protection: 11 Modules Synchronized</span>
-            </div>
-          )}
-
-          {/* Trigger Scan Button for Judges */}
-          <button
-            onClick={() => onTriggerScan && onTriggerScan()}
-            disabled={isAnalyzing}
-            style={{
-              background: "linear-gradient(135deg, rgba(56,139,253,0.18) 0%, rgba(88,214,232,0.12) 100%)",
-              border: "1px solid rgba(88,214,232,0.35)",
-              borderRadius: "8px", padding: "5px 12px",
-              fontSize: "11px", fontWeight: 700, color: "var(--accent-cyan)",
-              display: "flex", alignItems: "center", gap: "6px", cursor: isAnalyzing ? "not-allowed" : "pointer",
-              transition: "all 0.2s",
-            }}
-            className="hover:border-accent-cyan"
-            title="Trigger an autonomous IBM Bob AST audit scan across all 11 MediCore modules"
-          >
-            <span>⟳</span>
-            <span>{isAnalyzing ? "Scanning..." : "Rescan 11 Modules"}</span>
-          </button>
-
-          {/* Live Telemetry Stream Indicator Toggle */}
-          <button
-            onClick={() => setLiveStream(!liveStream)}
-            style={{
-              background: liveStream ? "rgba(56,139,253,0.12)" : "rgba(255,255,255,0.03)",
-              border: `1px solid ${liveStream ? "rgba(56,139,253,0.4)" : "var(--border)"}`,
-              borderRadius: "8px", padding: "5px 10px",
-              fontSize: "11px", fontWeight: 600, color: liveStream ? "var(--accent-cyan)" : "var(--text-muted)",
-              display: "none", alignItems: "center", gap: "6px", cursor: "pointer",
-            }}
-            className="sm:flex"
-          >
-            <span>{liveStream ? "📡" : "⏸️"}</span>
-            <span>{liveStream ? "TELEMETRY LIVE" : "PAUSED"}</span>
-          </button>
-        </div>
-
-        {/* Right: Regulatory Badges & Notification Drawer Trigger */}
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{ display: "none", alignItems: "center", gap: "8px" }} className="lg:flex">
-            <span className="badge badge-critical" style={{ fontSize: "10px" }}>
-              EU AI ACT ART. 50
-            </span>
-            <span className="badge badge-medium" style={{ fontSize: "10px" }}>
-              NABH QPS.5
-            </span>
-            <span className="badge badge-purple" style={{ fontSize: "10px" }}>
-              DPDP 2023
-            </span>
+        {/* ── Actions & System Status ── */}
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+          {/* Parallel agents status pill */}
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "7px",
+            padding: "6px 12px",
+            borderRadius: "8px",
+            background: "rgba(16, 185, 129, 0.08)",
+            border: "1px solid rgba(16, 185, 129, 0.25)",
+            fontSize: "11px",
+            fontFamily: "'JetBrains Mono', monospace",
+            color: "#34d399",
+            fontWeight: 600,
+          }}>
+            <span style={{
+              width: "6px",
+              height: "6px",
+              borderRadius: "50%",
+              background: "#10b981",
+              boxShadow: "0 0 6px #10b981",
+            }} />
+            5 Agents Online
           </div>
 
-          {/* Command Palette Trigger */}
+          {onOpenAnalytics && (
+            <button
+              onClick={onOpenAnalytics}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "rgba(255, 255, 255, 0.04)",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                borderRadius: "9px",
+                padding: "7px 12px",
+                cursor: "pointer",
+                color: "var(--accent-purple)",
+                fontSize: "11.5px",
+                fontWeight: 600,
+                transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                fontFamily: "'JetBrains Mono', monospace",
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(168, 85, 247, 0.5)";
+                (e.currentTarget as HTMLButtonElement).style.background = "rgba(168, 85, 247, 0.1)";
+                (e.currentTarget as HTMLButtonElement).style.color = "#ffffff";
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255, 255, 255, 0.1)";
+                (e.currentTarget as HTMLButtonElement).style.background = "rgba(255, 255, 255, 0.04)";
+                (e.currentTarget as HTMLButtonElement).style.color = "var(--accent-purple)";
+              }}
+              title="Open Bobalytics: Parallel Tool Latency & Clinical Financial ROI Engine"
+            >
+              <span>📊</span>
+              <span>Bobalytics™</span>
+            </button>
+          )}
+
+          {onOpenVitals && (
+            <button
+              onClick={onOpenVitals}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "rgba(255, 255, 255, 0.04)",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                borderRadius: "9px",
+                padding: "7px 12px",
+                cursor: "pointer",
+                color: "var(--accent-cyan)",
+                fontSize: "11.5px",
+                fontWeight: 600,
+                transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                fontFamily: "'JetBrains Mono', monospace",
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(56, 189, 248, 0.5)";
+                (e.currentTarget as HTMLButtonElement).style.background = "rgba(56, 189, 248, 0.1)";
+                (e.currentTarget as HTMLButtonElement).style.color = "#ffffff";
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255, 255, 255, 0.1)";
+                (e.currentTarget as HTMLButtonElement).style.background = "rgba(255, 255, 255, 0.04)";
+                (e.currentTarget as HTMLButtonElement).style.color = "var(--accent-cyan)";
+              }}
+              title="Open Real-time 60FPS ECG Waveform & Telemetry Crisis Simulator"
+            >
+              <span>🫀</span>
+              <span>Vitals ECG</span>
+            </button>
+          )}
+
+          {/* Search / Command palette trigger */}
           <button
             onClick={onOpenCommandPalette}
             style={{
-              display: "flex", alignItems: "center", gap: "6px",
-              background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)",
-              borderRadius: "8px", padding: "6px 12px", fontSize: "11px",
-              color: "var(--text-secondary)", cursor: "pointer",
-              transition: "all 0.2s",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              background: "rgba(255, 255, 255, 0.04)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: "9px",
+              padding: "7px 14px",
+              cursor: "pointer",
+              color: "var(--text-secondary)",
+              fontSize: "12px",
+              transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+              fontFamily: "'JetBrains Mono', monospace",
             }}
-            className="hover:border-accent-cyan"
-            title="Open Command Center (Ctrl+K / Cmd+K)"
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(56, 189, 248, 0.4)";
+              (e.currentTarget as HTMLButtonElement).style.background = "rgba(56, 189, 248, 0.08)";
+              (e.currentTarget as HTMLButtonElement).style.color = "#ffffff";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255, 255, 255, 0.1)";
+              (e.currentTarget as HTMLButtonElement).style.background = "rgba(255, 255, 255, 0.04)";
+              (e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)";
+            }}
           >
-            <span style={{ fontSize: "12px" }}>⚡</span>
-            <span className="kbd-shortcut">⌘K</span>
-            <span style={{ display: "none" }} className="sm:inline">Command</span>
+            <span style={{ fontSize: "12px" }}>🔍</span>
+            <span>Search</span>
+            <span className="kbd-shortcut" style={{ fontSize: "9.5px", padding: "1px 6px" }}>⌘K</span>
           </button>
 
-          {/* Notifications bell */}
-          <div style={{ position: "relative" }}>
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              style={{
-                width: "36px", height: "36px", borderRadius: "10px",
-                background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "15px", cursor: "pointer", transition: "all 0.2s",
-                position: "relative",
-              }}
-              className="hover:border-accent-cyan"
-            >
-              🔔
-              <span style={{
-                position: "absolute", top: "-4px", right: "-4px",
-                width: "16px", height: "16px", borderRadius: "50%",
-                background: "var(--critical)", color: "#fff",
-                fontSize: "9px", fontWeight: 800,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: "0 0 8px rgba(248,81,73,0.6)",
-              }}>3</span>
-            </button>
-
-            {/* Notification Dropdown */}
-            {showNotifications && (
-              <div
-                className="glass-card animate-slide-up"
-                style={{
-                  position: "absolute", right: 0, top: "46px",
-                  width: "320px", padding: "16px", zIndex: 100,
-                  boxShadow: "0 16px 48px rgba(0,0,0,0.8)",
-                  border: "1px solid var(--border-bright)",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                  <strong style={{ fontSize: "13px" }}>Active Clinical Disconnects</strong>
-                  <span className="badge badge-critical">3 High Risk</span>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <div style={{ padding: "8px", background: "rgba(248,81,73,0.08)", borderRadius: "8px", border: "1px solid rgba(248,81,73,0.2)" }}>
-                    <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--critical)" }}>GAP-001: Wards ↔ Pharmacy</div>
-                    <div style={{ fontSize: "10px", color: "var(--text-secondary)", marginTop: "2px" }}>Active prescription for discharged bed ICU-3</div>
-                  </div>
-                  <div style={{ padding: "8px", background: "rgba(248,81,73,0.08)", borderRadius: "8px", border: "1px solid rgba(248,81,73,0.2)" }}>
-                    <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--critical)" }}>GAP-002: Pharmacy ↔ Billing</div>
-                    <div style={{ fontSize: "10px", color: "var(--text-secondary)", marginTop: "2px" }}>₹2.34L uncaptured drug line items</div>
-                  </div>
-                  <div style={{ padding: "8px", background: "rgba(227,179,65,0.08)", borderRadius: "8px", border: "1px solid rgba(227,179,65,0.2)" }}>
-                    <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--accent-orange)" }}>GAP-003: Billing ↛ Analytics</div>
-                    <div style={{ fontSize: "10px", color: "var(--text-secondary)", marginTop: "2px" }}>Stale executive revenue pipeline</div>
-                  </div>
-                </div>
-              </div>
+          {/* New investigation CTA */}
+          <button
+            onClick={onTriggerScan}
+            disabled={isAnalyzing}
+            className="btn-primary"
+            style={{
+              padding: "9px 20px",
+              fontSize: "12.5px",
+              fontWeight: 700,
+              gap: "8px",
+              boxShadow: "0 4px 20px rgba(14, 165, 233, 0.45)",
+            }}
+          >
+            {isAnalyzing ? (
+              <>
+                <span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⟳</span>
+                Triage In Progress…
+              </>
+            ) : (
+              <>
+                <span>⚡</span>
+                <span>Swarm Triage</span>
+              </>
             )}
-          </div>
+          </button>
         </div>
       </div>
     </header>
