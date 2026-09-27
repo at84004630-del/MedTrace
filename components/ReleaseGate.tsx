@@ -617,10 +617,10 @@ END OF AUDIT DOSSIER — CONFIDENTIAL & PRIVILEGED CLINICAL RECORD
               border: "1px solid rgba(255, 255, 255, 0.06)", fontFamily: "'JetBrains Mono', monospace",
               fontSize: "11px", color: "#cbd5e1", lineHeight: 1.6, maxHeight: "300px", overflowY: "auto",
             }}>
-              <div>// MEDTRACE COMPLIANCE PASSPORT · IBM BOB 2.0</div>
-              <div>// Incident ID: {incident.id}</div>
-              <div>// Timestamp: {new Date().toISOString()}</div>
-              <div>// Repository: hospital/st-jude-ehr (branch: main)</div>
+              <div>{"// MEDTRACE COMPLIANCE PASSPORT · IBM BOB 2.0"}</div>
+              <div>{"// Incident ID: "}{incident.id}</div>
+              <div>{"// Timestamp: "}{new Date().toISOString()}</div>
+              <div>{"// Repository: hospital/st-jude-ehr (branch: main)"}</div>
               <div>--------------------------------------------------</div>
               <div>DIAGNOSIS: Root cause confirmed at QueueService.js (94% conf)</div>
               <div>PATCH: 2 modified files, 1 test file (QueueService.test.js)</div>
