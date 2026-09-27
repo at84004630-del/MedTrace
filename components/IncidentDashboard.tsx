@@ -2,6 +2,18 @@
 
 import { useState } from "react";
 import { Incident, DEMO_INCIDENT, Tab } from "@/lib/types";
+import {
+  IconIntake,
+  IconInvestigate,
+  IconAgents,
+  IconTarget,
+  IconFix,
+  IconTestTube,
+  IconReview,
+  IconRelease,
+  IconBolt,
+  IconHospital,
+} from "@/components/NavIcons";
 
 interface IncidentDashboardProps {
   onStartInvestigation: (incident: Incident) => void;
@@ -32,20 +44,102 @@ const SAMPLE_INCIDENTS: Incident[] = [
 ];
 
 const QUICK_TEMPLATES = [
-  { icon: "🏥", label: "ED wait time mismatch", value: "Emergency department dashboard shows incorrect patient wait time. Affects triage prioritisation." },
-  { icon: "💊", label: "Pharmacy crash on discharge", value: "Pharmacy module crashes on patient discharge with unhandled null reference exception." },
-  { icon: "🧪", label: "Lab data not reaching AI", value: "Lab results not appearing in MediSentinel AI scoring pipeline. Troponin values missing." },
-  { icon: "💰", label: "Billing under-reporting drugs", value: "Pharmacy drug dispense records are not linked to billing invoices. Missing revenue line items." },
+  { icon: IconHospital, label: "ED wait time mismatch", value: "Emergency department dashboard shows incorrect patient wait time. Affects triage prioritisation.", tag: "ED QUEUE" },
+  { icon: IconFix, label: "Pharmacy crash on discharge", value: "Pharmacy module crashes on patient discharge with unhandled null reference exception.", tag: "PHARMACY" },
+  { icon: IconTestTube, label: "Lab data not reaching AI", value: "Lab results not appearing in MediSentinel AI scoring pipeline. Troponin values missing.", tag: "LAB / AI" },
+  { icon: IconTarget, label: "Billing under-reporting drugs", value: "Pharmacy drug dispense records are not linked to billing invoices. Missing revenue line items.", tag: "REVENUE" },
 ];
 
-const WORKFLOW_STEPS: { icon: string; label: string; desc: string; tab: Tab; tag: string }[] = [
-  { icon: "📥", label: "Incident Intake", desc: "Natural language & crash dumps", tab: "incidents", tag: "ACTIVE" },
-  { icon: "🔍", label: "Parallel Agents", desc: "5 specialist subagents", tab: "investigate", tag: "5× CONCURRENT" },
-  { icon: "🎯", label: "Root Cause", desc: "Evidence & confidence graph", tab: "investigate", tag: "94% CERTAINTY" },
-  { icon: "⚡", label: "Fix Generation", desc: "AST patch & code diff", tab: "fix", tag: "DIFF READY" },
-  { icon: "🧪", label: "Automated Tests", desc: "8 regression + unit tests", tab: "fix", tag: "100% PASS" },
-  { icon: "🛡️", label: "AI Safety Review", desc: "HIPAA, PHI & HL7 checks", tab: "review", tag: "7 CHECKS" },
-  { icon: "🚀", label: "Release Gate", desc: "Deployment audit passport", tab: "release", tag: "DEPLOY GATE" },
+interface WorkflowStepDef {
+  stepNum: string;
+  icon: React.ComponentType<{ size?: number; color?: string }>;
+  label: string;
+  desc: string;
+  tab: Tab;
+  tag: string;
+  tagColor: string;
+  latency: string;
+  accent: string;
+}
+
+const WORKFLOW_STEPS: WorkflowStepDef[] = [
+  {
+    stepNum: "01",
+    icon: IconIntake,
+    label: "Incident Intake",
+    desc: "Natural language & stack ingestion",
+    tab: "incidents",
+    tag: "LIVE INPUT",
+    tagColor: "#38bdf8",
+    latency: "< 5s",
+    accent: "rgba(56, 189, 248, 0.35)",
+  },
+  {
+    stepNum: "02",
+    icon: IconAgents,
+    label: "Parallel Mesh",
+    desc: "5 subagents analyze AST & call graph",
+    tab: "investigate",
+    tag: "5× MESH",
+    tagColor: "#60a5fa",
+    latency: "270k Ctx",
+    accent: "rgba(96, 165, 250, 0.35)",
+  },
+  {
+    stepNum: "03",
+    icon: IconTarget,
+    label: "Root Cause Engine",
+    desc: "Deterministic evidence & confidence graph",
+    tab: "investigate",
+    tag: "94% CERTAINTY",
+    tagColor: "#a855f7",
+    latency: "Zero Drift",
+    accent: "rgba(168, 85, 247, 0.35)",
+  },
+  {
+    stepNum: "04",
+    icon: IconFix,
+    label: "Fix Synthesizer",
+    desc: "Minimal surgical AST patch & diff",
+    tab: "fix",
+    tag: "DIFF READY",
+    tagColor: "#38bdf8",
+    latency: "AST Match",
+    accent: "rgba(56, 189, 248, 0.35)",
+  },
+  {
+    stepNum: "05",
+    icon: IconTestTube,
+    label: "Automated Tests",
+    desc: "8 Vitest unit & regression tests synthesized",
+    tab: "fix",
+    tag: "100% PASS",
+    tagColor: "#34d399",
+    latency: "Vitest Suite",
+    accent: "rgba(52, 211, 153, 0.35)",
+  },
+  {
+    stepNum: "06",
+    icon: IconReview,
+    label: "AI Safety Review",
+    desc: "HIPAA §164.312, PHI & HL7 guardrails",
+    tab: "review",
+    tag: "7 CHECKS",
+    tagColor: "#fbbf24",
+    latency: "FHIR Guard",
+    accent: "rgba(251, 191, 36, 0.35)",
+  },
+  {
+    stepNum: "07",
+    icon: IconRelease,
+    label: "Release Gate",
+    desc: "Cryptographic SHA-256 clinical passport",
+    tab: "release",
+    tag: "DEPLOY GATE",
+    tagColor: "#c084fc",
+    latency: "HITL Signed",
+    accent: "rgba(192, 132, 252, 0.35)",
+  },
 ];
 
 export default function IncidentDashboard({ onStartInvestigation, activeIncident, onSelectTab }: IncidentDashboardProps) {
@@ -90,95 +184,323 @@ export default function IncidentDashboard({ onStartInvestigation, activeIncident
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
-      {/* ── Interactive AI Workflow Pipeline Visualizer ── */}
-      <div className="glass-card" style={{ padding: "22px 24px", position: "relative", overflow: "hidden" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{
-              width: "28px", height: "28px", borderRadius: "8px",
-              background: "linear-gradient(135deg, #0ea5e9, #38bdf8)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "14px",
-            }}>
-              ⚡
-            </span>
+      {/* ── Interactive AI Workflow Pipeline Visualizer (IBM Bob 2.0 Orchestrated Developer Pipeline) ── */}
+      <div
+        className="glass-card"
+        style={{
+          padding: "24px 26px",
+          position: "relative",
+          overflow: "hidden",
+          background: "linear-gradient(180deg, rgba(8, 17, 36, 0.85) 0%, rgba(4, 9, 20, 0.95) 100%)",
+          border: "1px solid rgba(56, 189, 248, 0.2)",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
+        }}
+      >
+        {/* Top luminous accent beam */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: "2px",
+            background: "linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.4) 20%, #00f2fe 50%, rgba(168, 85, 247, 0.4) 80%, transparent 100%)",
+          }}
+        />
+
+        {/* Pipeline Control Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "20px",
+            flexWrap: "wrap",
+            gap: "12px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "10px",
+                background: "linear-gradient(135deg, rgba(14, 165, 233, 0.25) 0%, rgba(37, 99, 235, 0.3) 100%)",
+                border: "1px solid rgba(56, 189, 248, 0.4)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 0 16px rgba(56, 189, 248, 0.3)",
+              }}
+            >
+              <IconBolt size={18} color="#38bdf8" />
+            </div>
             <div>
-              <h3 style={{ fontSize: "14px", fontWeight: 800, letterSpacing: "-0.01em", color: "#ffffff", fontFamily: "'Space Grotesk', sans-serif" }}>
-                IBM Bob 2.0 — Orchestrated Developer Pipeline
-              </h3>
-              <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "1px" }}>
-                Click any workflow node to inspect artifacts, code diffs, or gate verdicts
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <h3
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: 800,
+                    letterSpacing: "-0.02em",
+                    color: "#ffffff",
+                    fontFamily: "'Space Grotesk', sans-serif",
+                  }}
+                >
+                  IBM Bob 2.0 — Orchestrated Developer Pipeline
+                </h3>
+                <span
+                  style={{
+                    fontSize: "9.5px",
+                    fontWeight: 800,
+                    fontFamily: "'JetBrains Mono', monospace",
+                    padding: "2px 7px",
+                    borderRadius: "5px",
+                    background: "rgba(56, 189, 248, 0.15)",
+                    border: "1px solid rgba(56, 189, 248, 0.35)",
+                    color: "#38bdf8",
+                    letterSpacing: "0.04em",
+                  }}
+                >
+                  7 AUTONOMOUS STAGES
+                </span>
+              </div>
+              <p style={{ fontSize: "11.5px", color: "var(--text-secondary)", marginTop: "2px" }}>
+                Deterministic multi-agent execution pipeline: from incident detection to verified clinical release gate. Click any node to inspect.
               </p>
             </div>
           </div>
 
-          <div style={{
-            display: "flex", alignItems: "center", gap: "6px",
-            fontSize: "10px", fontFamily: "'JetBrains Mono', monospace",
-            color: "var(--text-secondary)", background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)", borderRadius: "6px", padding: "4px 10px",
-          }}>
-            <span style={{ color: "#34d399" }}>●</span> 7 Autonomous Stages
+          {/* Right Badges */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                fontSize: "10.5px",
+                fontFamily: "'JetBrains Mono', monospace",
+                color: "#34d399",
+                background: "rgba(16, 185, 129, 0.08)",
+                border: "1px solid rgba(16, 185, 129, 0.25)",
+                borderRadius: "6px",
+                padding: "4px 10px",
+                fontWeight: 600,
+              }}
+            >
+              <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 6px #10b981" }} />
+              Live Pipeline Active
+            </div>
+
+            <div
+              style={{
+                fontSize: "10.5px",
+                fontFamily: "'JetBrains Mono', monospace",
+                color: "#38bdf8",
+                background: "rgba(56, 189, 248, 0.08)",
+                border: "1px solid rgba(56, 189, 248, 0.22)",
+                borderRadius: "6px",
+                padding: "4px 10px",
+                fontWeight: 600,
+              }}
+            >
+              ⚡ 90s MTTR
+            </div>
           </div>
         </div>
 
         {/* Stepper Track */}
-        <div style={{
-          display: "flex", alignItems: "center", gap: "0",
-          overflowX: "auto", paddingBottom: "6px",
-        }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "stretch",
+            gap: "0",
+            overflowX: "auto",
+            padding: "4px 2px 10px 2px",
+            scrollbarWidth: "thin",
+          }}
+        >
           {WORKFLOW_STEPS.map((step, i) => {
+            const Icon = step.icon;
             const isFirst = i === 0;
+
             return (
               <div key={i} style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
                 <div
                   onClick={() => onSelectTab(step.tab)}
-                  className={`workflow-step ${isFirst ? "active" : ""}`}
                   style={{
-                    padding: "10px 14px",
-                    minWidth: "115px",
-                    maxWidth: "140px",
-                    textAlign: "center",
+                    background: isFirst
+                      ? "linear-gradient(145deg, rgba(14, 165, 233, 0.18) 0%, rgba(37, 99, 235, 0.1) 100%)"
+                      : "linear-gradient(145deg, rgba(12, 22, 44, 0.6) 0%, rgba(6, 12, 24, 0.8) 100%)",
+                    border: `1px solid ${isFirst ? "rgba(56, 189, 248, 0.5)" : "rgba(255, 255, 255, 0.08)"}`,
+                    borderRadius: "14px",
+                    padding: "14px 16px",
+                    minWidth: "148px",
+                    maxWidth: "168px",
+                    cursor: "pointer",
+                    transition: "all 0.22s cubic-bezier(0.16, 1, 0.3, 1)",
+                    position: "relative",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    gap: "8px",
+                    boxShadow: isFirst
+                      ? "0 6px 20px rgba(14, 165, 233, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                      : "0 4px 12px rgba(0, 0, 0, 0.25)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = step.tagColor;
+                    e.currentTarget.style.transform = "translateY(-3px)";
+                    e.currentTarget.style.boxShadow = `0 8px 24px ${step.accent}, inset 0 1px 0 rgba(255, 255, 255, 0.15)`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = isFirst ? "rgba(56, 189, 248, 0.5)" : "rgba(255, 255, 255, 0.08)";
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = isFirst
+                      ? "0 6px 20px rgba(14, 165, 233, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+                      : "0 4px 12px rgba(0, 0, 0, 0.25)";
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    <span style={{ fontSize: "18px" }}>{step.icon}</span>
-                    <span style={{
-                      fontSize: "8.5px", fontWeight: 700, padding: "1px 5px",
-                      borderRadius: "4px",
-                      background: isFirst ? "rgba(56, 189, 248, 0.25)" : "rgba(255,255,255,0.06)",
-                      color: isFirst ? "#38bdf8" : "var(--text-muted)",
-                      fontFamily: "'JetBrains Mono', monospace",
-                    }}>
+                  {/* Top: Step Number & Stage Tag */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 800,
+                        fontFamily: "'JetBrains Mono', monospace",
+                        color: step.tagColor,
+                        letterSpacing: "0.04em",
+                      }}
+                    >
+                      {step.stepNum}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "8.5px",
+                        fontWeight: 700,
+                        padding: "1.5px 6px",
+                        borderRadius: "4px",
+                        background: "rgba(255, 255, 255, 0.06)",
+                        border: `1px solid ${step.tagColor}40`,
+                        color: step.tagColor,
+                        fontFamily: "'JetBrains Mono', monospace",
+                        letterSpacing: "0.03em",
+                      }}
+                    >
                       {step.tag}
                     </span>
                   </div>
-                  <span style={{
-                    fontSize: "12px",
-                    fontWeight: isFirst ? 700 : 600,
-                    color: isFirst ? "#38bdf8" : "var(--text-primary)",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    maxWidth: "100%",
-                  }}>
-                    {step.label}
-                  </span>
-                  <span style={{
-                    fontSize: "9.5px",
-                    color: "var(--text-muted)",
-                    lineHeight: 1.25,
-                    whiteSpace: "normal",
-                  }}>
+
+                  {/* Middle: Vector Icon in glowing orb & Title */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
+                    <div
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                        borderRadius: "8px",
+                        background: `${step.tagColor}1a`,
+                        border: `1px solid ${step.tagColor}4d`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Icon size={16} color={step.tagColor} />
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontSize: "12.5px",
+                          fontWeight: 700,
+                          color: "#ffffff",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          letterSpacing: "-0.01em",
+                        }}
+                      >
+                        {step.label}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <p
+                    style={{
+                      fontSize: "10.5px",
+                      color: "var(--text-secondary)",
+                      lineHeight: 1.35,
+                      margin: 0,
+                    }}
+                  >
                     {step.desc}
-                  </span>
+                  </p>
+
+                  {/* Bottom: Micro Metric & Inspect Hint */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      paddingTop: "6px",
+                      borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+                      marginTop: "4px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "9.5px",
+                        fontFamily: "'JetBrains Mono', monospace",
+                        color: "var(--text-muted)",
+                      }}
+                    >
+                      {step.latency}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "9.5px",
+                        fontWeight: 700,
+                        color: step.tagColor,
+                        fontFamily: "'JetBrains Mono', monospace",
+                      }}
+                    >
+                      Inspect →
+                    </span>
+                  </div>
                 </div>
 
+                {/* Animated Glowing Conduit between stages */}
                 {i < WORKFLOW_STEPS.length - 1 && (
-                  <div style={{ display: "flex", alignItems: "center", padding: "0 6px", opacity: 0.6 }}>
-                    <svg width="22" height="12" viewBox="0 0 22 12">
-                      <path d="M0 6 L16 6 M12 2 L16 6 L12 10" stroke="rgba(56,189,248,0.4)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "0 6px",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "22px",
+                        height: "2px",
+                        background: "linear-gradient(90deg, rgba(56, 189, 248, 0.6) 0%, rgba(168, 85, 247, 0.6) 100%)",
+                        position: "relative",
+                        boxShadow: "0 0 8px rgba(56, 189, 248, 0.4)",
+                      }}
+                    >
+                      <div
+                        style={{
+                          position: "absolute",
+                          right: "-2px",
+                          top: "-3px",
+                          width: 0,
+                          height: 0,
+                          borderTop: "4px solid transparent",
+                          borderBottom: "4px solid transparent",
+                          borderLeft: "5px solid #38bdf8",
+                        }}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -200,9 +522,9 @@ export default function IncidentDashboard({ onStartInvestigation, activeIncident
                 <div style={{
                   width: "36px", height: "36px", borderRadius: "10px",
                   background: "rgba(239, 68, 68, 0.12)", border: "1px solid rgba(239, 68, 68, 0.3)",
-                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px",
+                  display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
-                  🚨
+                  <IconIntake size={18} color="#ef4444" />
                 </div>
                 <div>
                   <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#ffffff", fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -234,41 +556,45 @@ export default function IncidentDashboard({ onStartInvestigation, activeIncident
                 One-Click Incident Presets:
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                {QUICK_TEMPLATES.map((t, i) => (
-                  <button
-                    key={i}
-                    onClick={() => {
-                      setInputText(t.value);
-                      setSelectedTemplate(i);
-                    }}
-                    style={{
-                      background: selectedTemplate === i ? "rgba(56, 189, 248, 0.14)" : "rgba(255,255,255,0.03)",
-                      border: `1px solid ${selectedTemplate === i ? "rgba(56, 189, 248, 0.45)" : "rgba(255,255,255,0.07)"}`,
-                      borderRadius: "9px", padding: "8px 12px", fontSize: "11.5px",
-                      color: selectedTemplate === i ? "#ffffff" : "var(--text-secondary)",
-                      cursor: "pointer", display: "flex", alignItems: "center", gap: "8px",
-                      transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-                      textAlign: "left",
-                    }}
-                    onMouseEnter={e => {
-                      if (selectedTemplate !== i) {
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(56, 189, 248, 0.3)";
-                        (e.currentTarget as HTMLButtonElement).style.color = "#ffffff";
-                      }
-                    }}
-                    onMouseLeave={e => {
-                      if (selectedTemplate !== i) {
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.07)";
-                        (e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)";
-                      }
-                    }}
-                  >
-                    <span style={{ fontSize: "16px" }}>{t.icon}</span>
-                    <span style={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {t.label}
-                    </span>
-                  </button>
-                ))}
+                {QUICK_TEMPLATES.map((t, i) => {
+                  const Icon = t.icon;
+                  const isSelected = selectedTemplate === i;
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        setInputText(t.value);
+                        setSelectedTemplate(i);
+                      }}
+                      style={{
+                        background: isSelected ? "rgba(56, 189, 248, 0.14)" : "rgba(255,255,255,0.03)",
+                        border: `1px solid ${isSelected ? "rgba(56, 189, 248, 0.45)" : "rgba(255,255,255,0.07)"}`,
+                        borderRadius: "9px", padding: "8px 12px", fontSize: "11.5px",
+                        color: isSelected ? "#ffffff" : "var(--text-secondary)",
+                        cursor: "pointer", display: "flex", alignItems: "center", gap: "8px",
+                        transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                        textAlign: "left",
+                      }}
+                      onMouseEnter={e => {
+                        if (!isSelected) {
+                          (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(56, 189, 248, 0.3)";
+                          (e.currentTarget as HTMLButtonElement).style.color = "#ffffff";
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        if (!isSelected) {
+                          (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.07)";
+                          (e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)";
+                        }
+                      }}
+                    >
+                      <Icon size={16} color={isSelected ? "#38bdf8" : "var(--text-muted)"} />
+                      <span style={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {t.label}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -355,7 +681,7 @@ export default function IncidentDashboard({ onStartInvestigation, activeIncident
                   </>
                 ) : (
                   <>
-                    <span>🚀</span>
+                    <IconBolt size={15} color="#ffffff" />
                     <span>Launch 5-Agent Swarm</span>
                   </>
                 )}
@@ -388,7 +714,15 @@ export default function IncidentDashboard({ onStartInvestigation, activeIncident
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <span style={{ fontSize: "16px" }}>{attachedFile ? "📄" : "📎"}</span>
+                <span style={{ fontSize: "16px", color: attachedFile ? "#34d399" : "#38bdf8" }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                  </svg>
+                </span>
                 <div>
                   <span style={{ fontWeight: 600, color: attachedFile ? "#34d399" : "#ffffff" }}>
                     {attachedFile ? attachedFile : "Attach hospital logs, FHIR bundles, or stack traces"}
@@ -417,27 +751,28 @@ export default function IncidentDashboard({ onStartInvestigation, activeIncident
               textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px",
               fontFamily: "'JetBrains Mono', monospace", display: "flex", alignItems: "center", gap: "8px",
             }}>
-              <span>✦</span> ACTIVE IBM BOB 2.0 MODES
+              <span style={{ color: "#38bdf8" }}>✦</span> ACTIVE IBM BOB 2.0 MODES
             </div>
             
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {[
-                { mode: "ask", icon: "🔍", title: "Ask Mode", desc: "Explain unfamiliar hospital code, architecture and dependencies without modifying files", color: "#38bdf8" },
-                { mode: "plan", icon: "📋", title: "Plan Mode", desc: "Synthesizes structured investigation, patch implementation, and regression test plan", color: "#c084fc" },
-                { mode: "agent", icon: "⚡", title: "Agent Mode", desc: "Executes approved patches, runs CLI test suites, and coordinates 5 parallel subagents", color: "#34d399" },
-              ].map(({ mode, icon, title, desc, color }) => (
+                { mode: "ask", icon: IconInvestigate, title: "Ask Mode", desc: "Explain unfamiliar hospital code, architecture and dependencies without modifying files", color: "#38bdf8" },
+                { mode: "plan", icon: IconReview, title: "Plan Mode", desc: "Synthesizes structured investigation, patch implementation, and regression test plan", color: "#c084fc" },
+                { mode: "agent", icon: IconBolt, title: "Agent Mode", desc: "Executes approved patches, runs CLI test suites, and coordinates 5 parallel subagents", color: "#34d399" },
+              ].map(({ mode, icon: ModeIcon, title, desc, color }) => (
                 <div key={mode} style={{
                   padding: "10px 14px", borderRadius: "10px",
                   background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)",
                   display: "flex", alignItems: "center", gap: "12px",
                   transition: "all 0.2s",
                 }}>
-                  <span style={{
-                    fontSize: "14px", width: "28px", height: "28px", borderRadius: "7px",
+                  <div style={{
+                    width: "28px", height: "28px", borderRadius: "7px",
                     background: `${color}18`, display: "flex", alignItems: "center", justifyContent: "center",
+                    flexShrink: 0,
                   }}>
-                    {icon}
-                  </span>
+                    <ModeIcon size={15} color={color} />
+                  </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: "12.5px", fontWeight: 700, color, fontFamily: "'Space Grotesk', sans-serif" }}>
                       {title}
