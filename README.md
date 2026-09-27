@@ -12,13 +12,13 @@
 [![HIPAA](https://img.shields.io/badge/HIPAA-%C2%A7164.312%20Compliant-3fb950?style=flat)]()
 [![EU AI Act](https://img.shields.io/badge/EU%20AI%20Act-Article%2050%20Aligned-58d6e8?style=flat)]()
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat)](./LICENSE)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-success?style=flat&logo=vercel)](https://med-trace-git-main-at84004630-4735s-projects.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-success?style=flat&logo=vercel)](https://medtrace-ai.vercel.app)
 
 ---
 
 ## 🌐 Quick Links
 
-- 🚀 **Live Production Deployment**: [https://med-trace-git-main-at84004630-4735s-projects.vercel.app](https://med-trace-git-main-at84004630-4735s-projects.vercel.app)
+- 🚀 **Live Production Deployment**: [https://medtrace-ai.vercel.app](https://medtrace-ai.vercel.app)
 - 🐙 **GitHub Repository**: [https://github.com/at84004630-del/MedTrace](https://github.com/at84004630-del/MedTrace)
 
 ---
