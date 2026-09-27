@@ -4,6 +4,10 @@
 
 > **"Diagnose, fix, test, and safely release mission-critical hospital software in 90 seconds — with zero PHI leaks and full regulatory defensibility."**
 
+<div align="center">
+  <img src="./docs/screenshots/medtrace-cover.jpg" alt="MedTrace 16:9 Cover Banner" width="100%" />
+</div>
+
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=flat&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
 [![Turbopack](https://img.shields.io/badge/Turbopack-Ready-blueviolet?style=flat)](https://turbo.build/)
