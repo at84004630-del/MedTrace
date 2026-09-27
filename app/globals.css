@@ -245,6 +245,35 @@ svg, svg * {
   box-shadow: 0 4px 18px rgba(14, 165, 233, 0.2);
 }
 
+/* ── Navigation Header Responsive Adaptability & Search Bar Visibility ── */
+.nav-search-bar {
+  flex-shrink: 0 !important;
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+@media (max-width: 1380px) {
+  .nav-stage-label {
+    display: none;
+  }
+}
+
+@media (max-width: 1200px) {
+  .nav-btn-text {
+    display: none;
+  }
+  .nav-agents-text {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .incident-capsule {
+    display: none !important;
+  }
+}
+
 /* ── Workflow Stepper ── */
 .workflow-step {
   border-radius: 12px;
