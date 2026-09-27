@@ -58,9 +58,18 @@
 }
 
 /* ── Reset & Base ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  cursor: inherit;
+}
 
-html, body {
+html {
+  cursor: default;
+}
+
+body {
   font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -69,12 +78,198 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   letter-spacing: -0.01em;
+  cursor: default;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Custom selection highlight for code blocks */
+::selection {
+  background: rgba(56, 189, 248, 0.3);
+  color: #ffffff;
 }
 
 /* ── Typography helpers ── */
 .font-display { font-family: 'Space Grotesk', -apple-system, sans-serif; }
-.font-mono    { font-family: 'JetBrains Mono', monospace; }
+.font-mono, .mono { font-family: 'JetBrains Mono', monospace; }
 .font-body    { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; }
+
+/* ── Global Cursor & Selection Rules:
+   Prevents accidental I-beam typing cursor when clicking, hovering, or scrolling over icons, text, and cards ── */
+div,
+span,
+p,
+h1, h2, h3, h4, h5, h6,
+label,
+section,
+article,
+header,
+main,
+nav,
+aside,
+footer,
+li,
+ul,
+ol,
+table,
+thead,
+tbody,
+tr,
+th,
+td {
+  cursor: inherit;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection & I-beam typing cursor ONLY in text inputs and textareas */
+input[type="text"],
+input[type="search"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+textarea,
+[contenteditable="true"] {
+  cursor: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  user-select: text !important;
+}
+
+/* Code diffs, logs, and pre blocks allow selection to copy code, with clean code cursor */
+pre,
+code,
+.selectable-text,
+.mono-selectable {
+  cursor: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+}
+
+/* Clickable controls & interactive elements always display the hand pointer */
+button,
+a,
+[role="button"],
+.btn-primary,
+.btn-ghost,
+.btn-accent,
+.glass-card-interactive,
+.workflow-step,
+.nav-tab,
+.tab-button,
+.interactive-item,
+.kbd-shortcut,
+.badge,
+[style*="cursor: pointer"],
+[style*="cursor:pointer"] {
+  cursor: pointer !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Ensure all children (icons, spans, emojis, text) inside clickable controls inherit pointer and never show I-beam */
+button *,
+a *,
+[role="button"] *,
+.btn-primary *,
+.btn-ghost *,
+.btn-accent *,
+.workflow-step *,
+.nav-tab *,
+.glass-card-interactive *,
+[style*="cursor: pointer"] *,
+[style*="cursor:pointer"] * {
+  cursor: inherit !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Range sliders */
+input[type="range"] {
+  cursor: grab !important;
+  user-select: none !important;
+}
+input[type="range"]:active {
+  cursor: grabbing !important;
+}
+
+/* SVG icons should not capture drag-selection events */
+svg, svg * {
+  pointer-events: none;
+}
+
+/* ── Navigation Tabs ── */
+.nav-tab-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  background: rgba(6, 14, 28, 0.7);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  border-radius: 14px;
+  backdrop-filter: blur(16px);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-tab:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.nav-tab.active {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(37, 99, 235, 0.15) 100%);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #ffffff;
+  box-shadow: 0 4px 18px rgba(14, 165, 233, 0.2);
+}
+
+/* ── Workflow Stepper ── */
+.workflow-step {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.workflow-step:hover {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(14, 165, 233, 0.15);
+}
+.workflow-step.active {
+  background: linear-gradient(180deg, rgba(14, 165, 233, 0.18) 0%, rgba(10, 25, 50, 0.6) 100%);
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 0 4px 20px rgba(14, 165, 233, 0.25);
+}
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
