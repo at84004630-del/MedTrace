@@ -23,6 +23,14 @@
 
 ---
 
+## 📸 Platform & Agentic IDE Screenshots
+
+| IBM Bob 2.0 Autonomous IDE Session | Automated Test Synthesis & Regression Execution |
+| :---: | :---: |
+| ![IBM Bob 2.0 IDE Session](./docs/screenshots/ibm-bob-ide-session.png) | ![Automated Test Execution](./docs/screenshots/ide-test-execution.jpg) |
+
+---
+
 ## 🌍 The Problem
 
 Hospital IT teams maintain dozens of sprawling, interconnected software modules (EHR, Emergency Queue, Pharmacy, Billing, Lab, Telemetry AI). When incidents strike in clinical production, the consequences are catastrophic:
